@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===========================================================
+   PANEL DE ADMINISTRACIONES — Comincini Inmobiliaria
+   =========================================================== */
+:root{
+  --negro:#0B0B0B; --negro-2:#171717; --negro-3:#242424;
+  --dorado:#C6A15B; --dorado-claro:#D8BC80;
+  --marfil:#F5F2EC; --blanco:#FFFFFF; --gris:#777777; --gris-claro:#A8A29A;
+  --linea:rgba(0,0,0,.10); --linea-dorada:rgba(198,161,91,.30);
+
+  --verde:#2E7D52; --verde-fondo:#EAF4EE;
+  --ambar:#B57A1F; --ambar-fondo:#FDF4E3;
+  --rojo:#B4442F;  --rojo-fondo:#FBEFEC;
+
+  --display:"Marcellus",Georgia,serif;
+  --texto:"Jost","Helvetica Neue",Arial,sans-serif;
+
+  --radio:10px; --radio-sm:8px;
+  --sombra:0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.06);
+  --ancho:1320px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; font-family:var(--texto); font-size:15px; line-height:1.55;
+  color:var(--negro); background:var(--marfil); -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:var(--display);font-weight:400;line-height:1.2;margin:0}
+p{margin:0}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--dorado);outline-offset:2px;border-radius:4px}
+.oculto{display:none !important}
+.solo-lectores{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- PANTALLA DE CLAVE ---------- */
+.acceso{
+  position:fixed; inset:0; z-index:1000;
+  display:grid; place-items:center;
+  background:var(--negro);
+  padding:1.5rem;
+}
+.acceso__caja{width:100%;max-width:380px;text-align:center}
+.acceso__marca{
+  font-family:var(--display); font-size:1.35rem; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--dorado); margin-bottom:.3rem;
+}
+.acceso__sub{
+  font-size:.75rem; letter-spacing:.28em; text-transform:uppercase;
+  color:var(--gris); margin-bottom:2.5rem;
+}
+.acceso__campo{position:relative;margin-bottom:1rem}
+.acceso input{
+  width:100%; min-height:52px; padding:.8rem 3rem .8rem 1rem;
+  font-family:var(--texto); font-size:1rem; text-align:center; letter-spacing:.1em;
+  color:var(--marfil); background:var(--negro-2);
+  border:1px solid rgba(198,161,91,.35); border-radius:var(--radio-sm);
+}
+.acceso input:focus{outline:none;border-color:var(--dorado);background:var(--negro-3)}
+.ojo{
+  position:absolute; right:.4rem; top:50%; transform:translateY(-50%);
+  width:40px;height:40px; display:grid;place-items:center;
+  background:none;border:0;color:var(--gris);cursor:pointer;
+}
+.ojo:hover{color:var(--dorado)}
+.acceso__error{
+  min-height:1.4rem; font-size:.85rem; color:#E08A76; margin-top:.75rem;
+}
+.acceso__nota{
+  margin-top:2rem; font-size:.75rem; line-height:1.6; color:var(--gris);
+}
+
+/* ---------- ESTRUCTURA ---------- */
+.barra{
+  position:sticky; top:0; z-index:50;
+  background:var(--negro); color:var(--marfil);
+  border-bottom:1px solid var(--linea-dorada);
+}
+.barra__fila{
+  max-width:var(--ancho); margin:0 auto; padding:.8rem 1.25rem;
+  display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+}
+.barra__marca{
+  font-family:var(--display); font-size:1.05rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--dorado);
+}
+.barra__periodo{
+  font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--gris-claro); border-left:1px solid rgba(255,255,255,.15);
+  padding-left:1rem;
+}
+.barra__acciones{margin-left:auto;display:flex;gap:.5rem;align-items:center}
+
+.tabs{
+  background:var(--negro-2); border-bottom:1px solid rgba(255,255,255,.06);
+  position:sticky; top:53px; z-index:49;
+}
+.tabs__fila{
+  max-width:var(--ancho); margin:0 auto; padding:0 1.25rem;
+  display:flex; gap:.25rem; overflow-x:auto; scrollbar-width:none;
+}
+.tabs__fila::-webkit-scrollbar{display:none}
+.tab{
+  flex:0 0 auto; padding:.85rem 1.1rem;
+  background:none; border:0; border-bottom:2px solid transparent;
+  color:var(--gris-claro); font-size:.78rem; letter-spacing:.12em;
+  text-transform:uppercase; cursor:pointer; white-space:nowrap;
+  transition:color .2s,border-color .2s;
+}
+.tab:hover{color:var(--marfil)}
+.tab[aria-selected="true"]{color:var(--dorado);border-bottom-color:var(--dorado)}
+
+.envoltorio{max-width:var(--ancho);margin:0 auto;padding:1.75rem 1.25rem 5rem}
+.vista{display:none}
+.vista.activa{display:block}
+
+.titulo-seccion{
+  font-size:1.3rem; margin-bottom:.25rem;
+}
+.bajada{font-size:.9rem;color:var(--gris);margin-bottom:1.5rem}
+
+/* ---------- BOTONES ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  min-height:42px;padding:.5rem 1rem;
+  font-size:.78rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid transparent;border-radius:var(--radio-sm);
+  cursor:pointer;text-decoration:none;
+  transition:background .2s,color .2s,border-color .2s,transform .12s;
+}
+.btn:active{transform:translateY(1px)}
+.btn--dorado{background:linear-gradient(180deg,var(--dorado-claro),var(--dorado));color:var(--negro)}
+.btn--dorado:hover{background:var(--dorado-claro)}
+.btn--linea{background:transparent;color:var(--dorado);border-color:rgba(198,161,91,.5)}
+.btn--linea:hover{background:rgba(198,161,91,.12)}
+.btn--claro{background:var(--blanco);color:var(--negro);border-color:var(--linea)}
+.btn--claro:hover{border-color:var(--dorado)}
+.btn--peligro{background:var(--rojo-fondo);color:var(--rojo);border-color:#E3BFB6}
+.btn--peligro:hover{background:#F6E3DE}
+.btn--chico{min-height:34px;padding:.3rem .7rem;font-size:.7rem}
+.btn--ancho{width:100%}
+
+/* ---------- TARJETAS DE NÚMEROS ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem;margin-bottom:1.5rem}
+.kpi{
+  background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);
+  padding:1.15rem 1.25rem;box-shadow:var(--sombra);
+}
+.kpi__rotulo{
+  font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--gris);margin-bottom:.4rem;
+}
+.kpi__valor{font-family:var(--display);font-size:2.1rem;line-height:1}
+.kpi__pie{font-size:.78rem;color:var(--gris);margin-top:.3rem}
+.kpi--verde .kpi__valor{color:var(--verde)}
+.kpi--rojo  .kpi__valor{color:var(--rojo)}
+.kpi--dorado .kpi__valor{color:var(--dorado)}
+
+.progreso{height:6px;background:var(--marfil);border-radius:99px;overflow:hidden;margin-top:.7rem}
+.progreso__barra{height:100%;background:linear-gradient(90deg,var(--dorado),var(--verde));transition:width .6s ease}
+
+/* ---------- BLOQUE DE CIERRE DE MES ---------- */
+.cierre{
+  background:var(--negro);color:var(--marfil);border-radius:var(--radio);
+  padding:1.5rem;display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap;
+  margin-bottom:2rem;border:1px solid var(--linea-dorada);
+}
+.cierre__texto{flex:1 1 300px}
+.cierre h3{color:var(--dorado);font-size:1.1rem;margin-bottom:.3rem}
+.cierre p{font-size:.85rem;color:var(--gris-claro)}
+
+/* ---------- ALERTAS DE CONTRATOS ---------- */
+.alertas{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:.85rem;margin-bottom:1rem}
+.alerta{
+  background:var(--blanco);border:1px solid var(--linea);border-left:3px solid var(--gris);
+  border-radius:var(--radio-sm);padding:.9rem 1rem;text-align:left;cursor:pointer;width:100%;
+  transition:border-color .2s,transform .12s,box-shadow .2s;
+}
+.alerta:hover{transform:translateY(-2px);box-shadow:var(--sombra)}
+.alerta__n{font-family:var(--display);font-size:1.7rem;line-height:1;display:block}
+.alerta__t{font-size:.74rem;color:var(--gris);letter-spacing:.04em;margin-top:.25rem;display:block}
+.alerta--rojo{border-left-color:var(--rojo)}    .alerta--rojo .alerta__n{color:var(--rojo)}
+.alerta--ambar{border-left-color:var(--ambar)}  .alerta--ambar .alerta__n{color:var(--ambar)}
+.alerta--verde{border-left-color:var(--verde)}  .alerta--verde .alerta__n{color:var(--verde)}
+.alerta--gris{border-left-color:var(--gris-claro)}
+
+/* ---------- PANEL: HISTÓRICO ---------- */
+.panel-blanco{
+  background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);
+  padding:1.35rem;box-shadow:var(--sombra);margin-bottom:1.5rem;
+}
+.panel-blanco h3{font-size:1.05rem;margin-bottom:.2rem}
+.panel-blanco .bajada{margin-bottom:1rem}
+
+/* ---------- HERRAMIENTAS / FILTROS ---------- */
+.herramientas{
+  display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem;
+}
+.buscador{position:relative;flex:1 1 260px;min-width:200px}
+.buscador svg{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:var(--gris)}
+.buscador input{
+  width:100%;min-height:42px;padding:.5rem .9rem .5rem 2.4rem;
+  font-family:var(--texto);font-size:.92rem;
+  background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio-sm);
+}
+.buscador input:focus{outline:none;border-color:var(--dorado);box-shadow:0 0 0 3px rgba(198,161,91,.15)}
+select.filtro{
+  min-height:42px;padding:.5rem 2rem .5rem .8rem;
+  font-family:var(--texto);font-size:.85rem;
+  background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio-sm);
+  appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23777' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .7rem center;
+}
+select.filtro:focus{outline:none;border-color:var(--dorado)}
+.contador-resultados{font-size:.8rem;color:var(--gris);margin-left:auto}
+
+/* ---------- TABLA DE CONTRATOS ---------- */
+.tabla-caja{
+  background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);
+  overflow:hidden;box-shadow:var(--sombra);
+}
+.fila{
+  display:grid;
+  grid-template-columns:46px minmax(0,1.45fr) minmax(0,1.2fr) minmax(0,1.6fr) 122px 134px 92px 72px;
+  gap:.9rem;align-items:center;
+  padding:.7rem 1.15rem;border-bottom:1px solid var(--linea);
+}
+.fila--cabeza{
+  background:var(--negro);color:var(--dorado);
+  font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;
+  border-bottom:0;padding-block:.7rem;
+}
+.fila:last-child{border-bottom:0}
+.fila--dato:hover{background:#FCFBF8}
+.fila--pendiente{background:#FEFAF8}
+.fila--pendiente:hover{background:#FBF2EE}
+
+.celda-fuerte{font-weight:500;line-height:1.3}
+.celda-suave{font-size:.84rem;color:var(--gris);line-height:1.3}
+.celda-sub{font-size:.74rem;color:var(--gris-claro)}
+
+.pastilla{
+  display:inline-block;padding:.15rem .55rem;border-radius:99px;
+  font-size:.68rem;letter-spacing:.04em;white-space:nowrap;
+}
+.pastilla--tipo{
+  background:var(--marfil);border:1px solid var(--linea);color:var(--gris);
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;
+}
+.c-prop,.c-inq,.c-dir{min-width:0;overflow:hidden}
+.c-prop .celda-fuerte,.c-inq{text-overflow:ellipsis;white-space:nowrap;overflow:hidden;display:block}
+.c-dir .celda-suave,.c-dir .celda-sub{display:block;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+.pastilla--rojo{background:var(--rojo-fondo);color:var(--rojo)}
+.pastilla--ambar{background:var(--ambar-fondo);color:var(--ambar)}
+.pastilla--verde{background:var(--verde-fondo);color:var(--verde)}
+.pastilla--gris{background:#F0EEE9;color:var(--gris)}
+
+/* Interruptor de pagado */
+.pago{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:none;border:0;cursor:pointer;padding:.25rem;
+}
+.pago__pista{
+  position:relative;width:38px;height:21px;border-radius:99px;
+  background:#D8D3C9;transition:background .25s;flex:0 0 auto;
+}
+.pago__pista::after{
+  content:"";position:absolute;top:3px;left:3px;width:15px;height:15px;
+  background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.3);
+  transition:transform .25s;
+}
+.pago[aria-pressed="true"] .pago__pista{background:var(--verde)}
+.pago[aria-pressed="false"] .pago__pista{background:var(--rojo)}
+.pago[aria-pressed="true"] .pago__pista::after{transform:translateX(17px)}
+.pago__texto{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+.pago[aria-pressed="true"] .pago__texto{color:var(--verde);font-weight:500}
+.pago[aria-pressed="false"] .pago__texto{color:var(--rojo);font-weight:500}
+
+.c-acc{display:flex;gap:.15rem;justify-content:flex-end;align-items:center}
+.icono-btn{
+  position:relative;
+  width:32px;height:32px;display:grid;place-items:center;
+  background:none;border:1px solid transparent;border-radius:var(--radio-sm);
+  color:var(--gris);cursor:pointer;transition:all .2s;
+}
+.icono-btn:hover{color:var(--negro);border-color:var(--linea);background:var(--marfil)}
+.icono-btn--con-notas{color:var(--dorado)}
+.icono-btn__n{
+  position:absolute;top:-2px;right:-2px;
+  min-width:16px;height:16px;padding:0 3px;
+  background:var(--dorado);color:var(--negro);
+  border-radius:99px;font-size:.6rem;font-weight:600;
+  line-height:16px;text-align:center;
+}
+
+/* ---------- COMENTARIOS ---------- */
+.ficha-contrato{
+  background:var(--marfil);border:1px solid var(--linea);border-radius:var(--radio-sm);
+  padding:.9rem 1rem;margin-bottom:1.15rem;font-size:.88rem;line-height:1.45;
+}
+.ficha-contrato strong{display:block;font-size:.98rem}
+.comentarios{display:grid;gap:.6rem;margin-bottom:1.15rem;max-height:290px;overflow-y:auto}
+.comentario{
+  background:var(--blanco);border:1px solid var(--linea);border-left:3px solid var(--dorado);
+  border-radius:var(--radio-sm);padding:.7rem .85rem;
+}
+.comentario__cabeza{
+  display:flex;align-items:center;gap:.6rem;margin-bottom:.25rem;
+}
+.comentario__fecha{
+  font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);flex:1;
+}
+.comentario__texto{font-size:.9rem;line-height:1.5;white-space:pre-wrap}
+.borrar-comentario{
+  background:none;border:0;color:var(--gris-claro);cursor:pointer;padding:2px;line-height:0;
+}
+.borrar-comentario:hover{color:var(--rojo)}
+
+/* ---------- PROPIETARIOS ---------- */
+.propietarios{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:1rem}
+.prop{
+  background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);
+  box-shadow:var(--sombra);overflow:hidden;
+}
+.prop__cabeza{
+  padding:1rem 1.15rem;border-bottom:1px solid var(--linea);
+  display:flex;align-items:center;gap:.75rem;
+}
+.prop__nombre{font-family:var(--display);font-size:1.02rem;line-height:1.25;flex:1}
+.prop__marcador{
+  font-family:var(--display);font-size:1.15rem;white-space:nowrap;
+}
+.prop__unidades{padding:.35rem 0}
+.unidad{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.5rem 1.15rem;font-size:.84rem;
+}
+.unidad:hover{background:#FCFBF8}
+.unidad__punto{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--verde)}
+.unidad__punto--no{background:var(--rojo)}
+.unidad__texto{flex:1;line-height:1.3}
+.unidad__vto{font-size:.72rem;color:var(--gris-claro);white-space:nowrap}
+.prop__pie{
+  padding:.7rem 1.15rem;background:var(--marfil);
+  font-size:.74rem;color:var(--gris);border-top:1px solid var(--linea);
+}
+
+/* ---------- CALENDARIO ---------- */
+.calendario{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.7rem;margin-bottom:2rem}
+.mes{
+  background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio-sm);
+  padding:.85rem;text-align:left;cursor:pointer;transition:all .2s;
+}
+.mes:hover{border-color:var(--dorado);transform:translateY(-2px);box-shadow:var(--sombra)}
+.mes--vacio{opacity:.45;cursor:default}
+.mes--vacio:hover{transform:none;box-shadow:none;border-color:var(--linea)}
+.mes--actual{border-color:var(--dorado);border-width:2px}
+.mes__nombre{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gris)}
+.mes__anio{font-size:.68rem;color:var(--gris-claro)}
+.mes__n{font-family:var(--display);font-size:1.9rem;line-height:1.1;margin-top:.3rem}
+.mes__etq{font-size:.7rem;color:var(--gris)}
+
+.linea-tiempo{display:grid;gap:.5rem}
+.hito{
+  display:flex;gap:1rem;align-items:center;
+  background:var(--blanco);border:1px solid var(--linea);border-left:3px solid var(--gris-claro);
+  border-radius:var(--radio-sm);padding:.75rem 1rem;
+}
+.hito--rojo{border-left-color:var(--rojo)}
+.hito--ambar{border-left-color:var(--ambar)}
+.hito__fecha{
+  font-family:var(--display);font-size:.95rem;min-width:92px;
+}
+.hito__dias{font-size:.7rem;color:var(--gris);display:block}
+.hito__cuerpo{flex:1;line-height:1.35}
+.hito__quien{font-weight:500;font-size:.9rem}
+.hito__donde{font-size:.8rem;color:var(--gris)}
+
+/* ---------- VENTANA MODAL ---------- */
+.modal{
+  position:fixed;inset:0;z-index:200;
+  display:grid;place-items:center;padding:1rem;
+  background:rgba(11,11,11,.6);backdrop-filter:blur(3px);
+}
+.modal__caja{
+  width:100%;max-width:560px;max-height:90vh;overflow-y:auto;
+  background:var(--blanco);border-radius:var(--radio);box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+.modal__cabeza{
+  padding:1.15rem 1.35rem;border-bottom:1px solid var(--linea);
+  display:flex;align-items:center;gap:1rem;position:sticky;top:0;background:var(--blanco);
+}
+.modal__cabeza h3{font-size:1.15rem;flex:1}
+.modal__cuerpo{padding:1.35rem}
+.modal__pie{
+  padding:1.1rem 1.35rem;border-top:1px solid var(--linea);
+  display:flex;gap:.6rem;justify-content:flex-end;flex-wrap:wrap;
+  position:sticky;bottom:0;background:var(--blanco);
+}
+.rejilla{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.campo{display:flex;flex-direction:column;gap:.3rem}
+.campo--largo{grid-column:1/-1}
+.campo label{font-size:.78rem;font-weight:500}
+.campo input,.campo select,.campo textarea{
+  min-height:42px;padding:.55rem .8rem;font-family:var(--texto);font-size:.92rem;
+  background:var(--marfil);border:1px solid var(--linea);border-radius:var(--radio-sm);
+  width:100%;
+}
+.campo textarea{min-height:70px;resize:vertical}
+.campo input:focus,.campo select:focus,.campo textarea:focus{
+  outline:none;background:var(--blanco);border-color:var(--dorado);box-shadow:0 0 0 3px rgba(198,161,91,.15);
+}
+.aviso-modal{
+  background:var(--ambar-fondo);border:1px solid #EBD9B4;border-radius:var(--radio-sm);
+  padding:.9rem 1rem;font-size:.85rem;color:#7A5412;line-height:1.5;margin-bottom:1rem;
+}
+.aviso-modal strong{display:block;margin-bottom:.2rem}
+
+/* ---------- MENSAJES ---------- */
+.aviso-flotante{
+  position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%) translateY(120%);
+  z-index:300;max-width:92vw;
+  background:var(--negro);color:var(--marfil);
+  padding:.85rem 1.35rem;border-radius:99px;font-size:.85rem;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+  opacity:0; visibility:hidden; pointer-events:none;
+  transition:transform .35s cubic-bezier(.2,.9,.3,1), opacity .25s ease, visibility .25s;
+}
+.aviso-flotante.visible{
+  transform:translateX(-50%) translateY(0);
+  opacity:1; visibility:visible;
+}
+
+.sin-datos{
+  padding:3rem 1.5rem;text-align:center;color:var(--gris-claro);
+  border:1px dashed var(--linea);border-radius:var(--radio);
+}
+
+.franja-demo{
+  background:var(--ambar-fondo);border-bottom:1px solid #EBD9B4;
+  color:#7A5412;font-size:.78rem;text-align:center;padding:.5rem 1rem;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:900px){
+  .fila{grid-template-columns:1fr auto;gap:.5rem .75rem;padding:.9rem 1rem}
+  .fila--cabeza{display:none}
+  .fila--dato{border-bottom:1px solid var(--linea)}
+  .c-nro{display:none}
+  .c-prop{grid-column:1;grid-row:1}
+  .c-inq{grid-column:1;grid-row:2}
+  .c-dir{grid-column:1;grid-row:3}
+  .c-tipo{grid-column:1;grid-row:4;justify-self:start}
+  .c-vto{grid-column:2;grid-row:3;justify-self:end;text-align:right}
+  .c-pago{grid-column:2;grid-row:1/3;justify-self:end;align-self:center}
+  .c-acc{grid-column:2;grid-row:4;justify-self:end}
+  .fila--cabeza{display:none}
+  .rejilla{grid-template-columns:1fr}
+  .tabs{top:49px}
+}
+@media (max-width:560px){
+  .barra__periodo{padding-left:0;border-left:0;width:100%}
+  .kpi__valor{font-size:1.8rem}
+}
+@media print{
+  .barra,.tabs,.herramientas,.cierre,.icono-btn,.pago{display:none !important}
+  body{background:#fff}
+  .vista{display:block !important}
+}
+/* --- propios de esta versión --- */
+.acceso__usuario{
+  font-size:.78rem;color:var(--gris-claro);margin-bottom:1.5rem;
+  word-break:break-all;
+}
+.girando{animation:girar 1s linear infinite}
+@keyframes girar{to{transform:rotate(360deg)}}
+.barra__usuario{
+  font-size:.7rem;color:var(--gris);letter-spacing:.04em;
+  max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.franja-error{
+  background:var(--rojo-fondo);border-bottom:1px solid #E3BFB6;
+  color:#8C3524;font-size:.8rem;text-align:center;padding:.55rem 1rem;
+}
+.cargando-pantalla{
+  position:fixed;inset:0;z-index:1000;display:grid;place-items:center;
+  background:var(--negro);color:var(--dorado);font-family:var(--display);
+  letter-spacing:.2em;text-transform:uppercase;font-size:.9rem;
+}
+
+/* ---------- WhatsApp por fila ---------- */
+.wa-menu{position:relative}
+.wa-opciones{
+  position:absolute;top:calc(100% + 6px);right:0;z-index:60;
+  background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio-sm);
+  box-shadow:0 10px 30px rgba(0,0,0,.18);min-width:190px;overflow:hidden;
+}
+.wa-opciones button{
+  display:flex;align-items:center;gap:.55rem;width:100%;
+  padding:.65rem .9rem;background:none;border:0;cursor:pointer;
+  font-size:.82rem;text-align:left;color:var(--negro);
+}
+.wa-opciones button:hover{background:var(--marfil)}
+.wa-opciones button:disabled{color:var(--gris-claro);cursor:not-allowed}
+.wa-opciones button:disabled:hover{background:none}
+.wa-opciones svg{color:#1FAF54;flex:0 0 auto}
+.icono-btn--wa{color:#1FAF54}
+.icono-btn--wa:hover{color:#158a3f;border-color:#bfe6cc;background:#EFFAF3}
+
+/* ---------- Actualizaciones ---------- */
+.res-calc{
+  margin-top:1.1rem;padding:1.1rem 1.25rem;border-radius:var(--radio-sm);
+  background:var(--negro);color:var(--marfil);
+}
+.res-calc__linea{display:flex;justify-content:space-between;gap:1rem;padding:.3rem 0;font-size:.88rem}
+.res-calc__linea strong{color:var(--dorado);font-family:var(--display);font-size:1.05rem}
+.res-calc__aviso{font-size:.78rem;color:var(--gris-claro);margin-top:.5rem}
+
+.fila-act{
+  display:grid;grid-template-columns:1.6fr 1.6fr auto auto auto;gap:1rem;align-items:center;
+  padding:.85rem 1.15rem;border-bottom:1px solid var(--linea);
+}
+.fila-act:last-child{border-bottom:0}
+.fila-act--cabeza{
+  background:var(--negro);color:var(--dorado);
+  font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;
+}
+.fila-act__coef{font-family:var(--display);font-size:1.1rem;color:var(--verde)}
+.fila-act__monto{font-family:var(--display);font-size:1.15rem}
+.fila-act__antes{font-size:.76rem;color:var(--gris);text-decoration:line-through}
+@media (max-width:900px){
+  .fila-act{grid-template-columns:1fr auto;gap:.4rem .75rem}
+  .fila-act--cabeza{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="cargando-pantalla" id="cargando">Abriendo…</div>
+
+<!-- ===================== CLAVE ===================== -->
+<div class="acceso oculto" id="acceso">
+  <div class="acceso__caja">
+    <p class="acceso__marca">Comincini</p>
+    <p class="acceso__sub">Administraciones</p>
+    <p class="acceso__usuario" id="usuario-google"></p>
+
+    <form id="form-clave" autocomplete="off">
+      <div class="acceso__campo">
+        <label class="solo-lectores" for="clave">Clave de acceso</label>
+        <input type="password" id="clave" placeholder="Clave de acceso" autocomplete="current-password" required>
+        <button class="ojo" type="button" id="ver-clave" aria-label="Mostrar la clave">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <button class="btn btn--dorado btn--ancho" type="submit" id="btn-entrar">Entrar</button>
+      <p class="acceso__error" id="error-clave" role="alert"></p>
+    </form>
+
+    <p class="acceso__nota">
+      Entraste con tu cuenta de Google.<br>
+      La clave se verifica en el servidor: los datos no salen de la planilla hasta que sea correcta.
+    </p>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="app" class="oculto">
+
+  <div class="franja-error oculto" id="franja-error"></div>
+
+  <header class="barra">
+    <div class="barra__fila">
+      <span class="barra__marca" id="marca">Comincini</span>
+      <span class="barra__periodo" id="etiqueta-periodo"></span>
+      <div class="barra__acciones">
+        <span class="barra__usuario" id="barra-usuario"></span>
+        <button class="btn btn--linea btn--chico" id="btn-refrescar" title="Traer los cambios de la otra computadora">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="icono-refrescar"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+          Actualizar
+        </button>
+        <button class="btn btn--linea btn--chico" id="btn-bloquear">Bloquear</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Secciones">
+    <div class="tabs__fila" role="tablist">
+      <button class="tab" role="tab" data-vista="panel"        aria-selected="true">Panel</button>
+      <button class="tab" role="tab" data-vista="contratos"    aria-selected="false">Contratos</button>
+      <button class="tab" role="tab" data-vista="propietarios" aria-selected="false">Propietarios</button>
+      <button class="tab" role="tab" data-vista="calendario"   aria-selected="false">Vencimientos</button>
+      <button class="tab" role="tab" data-vista="actualizaciones" aria-selected="false">Actualizaciones</button>
+    </div>
+  </nav>
+
+  <main class="envoltorio">
+
+    <section class="vista activa" id="vista-panel">
+      <h2 class="titulo-seccion">Cobros del mes</h2>
+      <p class="bajada" id="sub-panel"></p>
+      <div class="kpis" id="kpis"></div>
+
+      <div class="cierre">
+        <div class="cierre__texto">
+          <h3>Cerrar el mes</h3>
+          <p id="texto-cierre"></p>
+        </div>
+        <button class="btn btn--dorado" id="btn-cerrar-mes">Cerrar mes y reiniciar cobros</button>
+      </div>
+
+      <h2 class="titulo-seccion">Contratos</h2>
+      <p class="bajada">Tocá cualquier recuadro para ver esos contratos en la lista.</p>
+      <div class="alertas" id="alertas"></div>
+
+      <div class="panel-blanco">
+        <h3>Meses cerrados</h3>
+        <p class="bajada">Queda registrado cómo terminó cada mes al momento de reiniciar.</p>
+        <div id="historico"></div>
+      </div>
+    </section>
+
+    <section class="vista" id="vista-contratos">
+      <h2 class="titulo-seccion">Contratos</h2>
+      <p class="bajada">Marcá el cobro con el interruptor. Se guarda en la planilla al instante.</p>
+
+      <div class="herramientas">
+        <div class="buscador">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <label class="solo-lectores" for="buscar">Buscar</label>
+          <input type="search" id="buscar" placeholder="Buscar por propietario, inquilino o dirección">
+        </div>
+        <select class="filtro" id="f-estado">
+          <option value="">Todos los cobros</option>
+          <option value="si">Pagados</option>
+          <option value="no">Pendientes</option>
+        </select>
+        <select class="filtro" id="f-tipo"><option value="">Todos los tipos</option></select>
+        <select class="filtro" id="f-vto">
+          <option value="">Todos los contratos</option>
+          <option value="vencido">Vencidos</option>
+          <option value="30">Vencen en 30 días</option>
+          <option value="60">Vencen en 60 días</option>
+          <option value="90">Vencen en 90 días</option>
+          <option value="sinfecha">Sin fecha cargada</option>
+          <option value="vacante">Sin inquilino</option>
+        </select>
+        <button class="btn btn--claro btn--chico" id="btn-limpiar">Limpiar</button>
+        <button class="btn btn--dorado btn--chico" id="btn-nuevo">+ Nuevo contrato</button>
+        <span class="contador-resultados" id="contador"></span>
+      </div>
+
+      <div class="tabla-caja">
+        <div class="fila fila--cabeza">
+          <span>N°</span><span>Propietario</span><span>Inquilino</span>
+          <span>Dirección</span><span>Tipo</span><span>Vencimiento</span><span>Cobro</span>
+          <span></span>
+        </div>
+        <div id="tabla"></div>
+      </div>
+    </section>
+
+    <section class="vista" id="vista-propietarios">
+      <h2 class="titulo-seccion">Propietarios</h2>
+      <p class="bajada" id="sub-propietarios"></p>
+      <div class="herramientas">
+        <div class="buscador">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <label class="solo-lectores" for="buscar-prop">Buscar propietario</label>
+          <input type="search" id="buscar-prop" placeholder="Buscar propietario">
+        </div>
+        <select class="filtro" id="f-prop-orden">
+          <option value="pendientes">Primero los que deben</option>
+          <option value="unidades">Más unidades primero</option>
+          <option value="alfabetico">Por apellido</option>
+        </select>
+      </div>
+      <div class="propietarios" id="propietarios"></div>
+    </section>
+
+    <section class="vista" id="vista-calendario">
+      <h2 class="titulo-seccion">Vencimientos de contratos</h2>
+      <p class="bajada">Los próximos dieciocho meses. Tocá un mes para ver esos contratos.</p>
+      <div class="calendario" id="calendario"></div>
+      <h2 class="titulo-seccion">Qué se viene</h2>
+      <p class="bajada">Contratos vencidos y los que vencen en los próximos noventa días.</p>
+      <div class="linea-tiempo" id="linea-tiempo"></div>
+    </section>
+
+    <section class="vista" id="vista-actualizaciones">
+      <h2 class="titulo-seccion">Actualizaciones por IPC</h2>
+      <p class="bajada" id="sub-actualizaciones">
+        Calculado con el Índice de Precios al Consumidor (INDEC), nivel general.
+      </p>
+
+      <div class="panel-blanco" id="calc-libre">
+        <h3>Calculadora rápida</h3>
+        <p class="bajada">Simulá un valor sin necesidad de guardarlo en ningún contrato.</p>
+        <div class="rejilla">
+          <div class="campo">
+            <label for="calc-monto">Monto inicial</label>
+            <input type="number" id="calc-monto" min="0" step="1000" placeholder="150000">
+          </div>
+          <div class="campo">
+            <label for="calc-inicio">Fecha de inicio</label>
+            <input type="date" id="calc-inicio">
+          </div>
+          <div class="campo">
+            <label for="calc-meses">Actualiza cada</label>
+            <select id="calc-meses">
+              <option value="3">3 meses</option>
+              <option value="4">4 meses</option>
+              <option value="6" selected>6 meses</option>
+              <option value="12">12 meses</option>
+            </select>
+          </div>
+          <div class="campo" style="align-self:end">
+            <button class="btn btn--dorado btn--ancho" id="btn-calc-libre">Calcular</button>
+          </div>
+        </div>
+        <div id="resultado-calc-libre"></div>
+      </div>
+
+      <h2 class="titulo-seccion">Contratos con actualización cargada</h2>
+      <p class="bajada">
+        Para que un contrato aparezca acá, cargale el monto y la periodicidad
+        desde el editor (lápiz, en Contratos).
+      </p>
+      <div class="tabla-caja" id="caja-actualizaciones"></div>
+    </section>
+
+  </main>
+</div>
+
+<div class="aviso-flotante" id="aviso"></div>
+<div id="contenedor-modal"></div>
+
+<script>
+'use strict';
+
+/* =========================================================
+   1. PUENTE CON EL SERVIDOR
+   Cada llamada va a la planilla. Devuelve una promesa para
+   poder usar async/await con comodidad.
+   ========================================================= */
+function servidor(funcion){
+  const args = Array.prototype.slice.call(arguments, 1);
+  return new Promise((ok, error) => {
+    google.script.run
+      .withSuccessHandler(ok)
+      .withFailureHandler(e => error(new Error(e && e.message ? e.message : String(e))))
+      [funcion].apply(null, args);
+  });
+}
+
+function mostrarError(texto){
+  const f = document.getElementById('franja-error');
+  f.textContent = texto;
+  f.classList.remove('oculto');
+  clearTimeout(mostrarError._t);
+  mostrarError._t = setTimeout(() => f.classList.add('oculto'), 8000);
+}
+
+/* =========================================================
+   2. UTILIDADES
+   ========================================================= */
+const $  = (s, c = document) => c.querySelector(s);
+const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
+
+const HOY = new Date(); HOY.setHours(0,0,0,0);
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+               'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function aFecha(iso){
+  if (!iso) return null;
+  const [a,m,d] = String(iso).split('-').map(Number);
+  if (!a) return null;
+  const f = new Date(a, m-1, d); f.setHours(0,0,0,0); return f;
+}
+function fechaCorta(iso){
+  const f = aFecha(iso);
+  if (!f) return '—';
+  return `${String(f.getDate()).padStart(2,'0')}/${String(f.getMonth()+1).padStart(2,'0')}/${f.getFullYear()}`;
+}
+function diasHasta(iso){
+  const f = aFecha(iso);
+  return f ? Math.round((f - HOY) / 86400000) : null;
+}
+function periodoLegible(p){
+  if (!p) return '';
+  const [a,m] = String(p).split('-').map(Number);
+  return `${MESES[m-1]} ${a}`;
+}
+function siguientePeriodo(p){
+  let [a,m] = String(p).split('-').map(Number);
+  m++; if (m > 12){ m = 1; a++; }
+  return `${a}-${String(m).padStart(2,'0')}`;
+}
+function normalizar(t){
+  return String(t ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function fechaHora(iso){
+  const f = new Date(iso);
+  const p = n => String(n).padStart(2,'0');
+  return `${p(f.getDate())}/${p(f.getMonth()+1)}/${f.getFullYear()} · ${p(f.getHours())}:${p(f.getMinutes())}`;
+}
+function avisar(texto){
+  const a = $('#aviso');
+  a.textContent = texto;
+  a.classList.add('visible');
+  clearTimeout(avisar._t);
+  avisar._t = setTimeout(() => a.classList.remove('visible'), 3200);
+}
+
+/* =========================================================
+   3. ESTADO
+   ========================================================= */
+let DATOS = null;
+let filtroMes = '';
+
+/* =========================================================
+   4. CÁLCULOS
+   ========================================================= */
+function resumen(){
+  const cs = DATOS.contratos;
+  const activos = cs.filter(c => c.locatario);
+  const pagados = activos.filter(c => c.pagado).length;
+  return {
+    total: cs.length, activos: activos.length, pagados,
+    pendientes: activos.length - pagados,
+    vacantes: cs.length - activos.length,
+    porcentaje: activos.length ? Math.round(pagados / activos.length * 100) : 0
+  };
+}
+function estadoVto(c){
+  if (!c.locatario) return 'vacante';
+  if (!c.vto) return 'sinfecha';
+  const d = diasHasta(c.vto);
+  if (d < 0) return 'vencido';
+  if (d <= 30) return 'd30';
+  if (d <= 60) return 'd60';
+  if (d <= 90) return 'd90';
+  return 'vigente';
+}
+function conteoVencimientos(){
+  const r = { vencido:0, d30:0, d60:0, d90:0, vigente:0, sinfecha:0, vacante:0 };
+  DATOS.contratos.forEach(c => r[estadoVto(c)]++);
+  return r;
+}
+
+/* =========================================================
+   5. PANEL
+   ========================================================= */
+function pintarPanel(){
+  const r = resumen();
+  $('#etiqueta-periodo').textContent = `Período ${periodoLegible(DATOS.periodo)}`;
+  $('#sub-panel').textContent =
+    `${r.activos} contratos con inquilino · ${r.vacantes} unidades sin alquilar · período ${periodoLegible(DATOS.periodo)}`;
+
+  $('#kpis').innerHTML = `
+    <div class="kpi kpi--verde"><p class="kpi__rotulo">Pagaron</p>
+      <p class="kpi__valor">${r.pagados}</p><p class="kpi__pie">de ${r.activos} contratos</p></div>
+    <div class="kpi kpi--rojo"><p class="kpi__rotulo">Falta cobrar</p>
+      <p class="kpi__valor">${r.pendientes}</p>
+      <p class="kpi__pie">${r.pendientes ? 'pendientes de pago' : 'está todo cobrado'}</p></div>
+    <div class="kpi kpi--dorado"><p class="kpi__rotulo">Avance del mes</p>
+      <p class="kpi__valor">${r.porcentaje}%</p>
+      <div class="progreso"><div class="progreso__barra" style="width:${r.porcentaje}%"></div></div></div>
+    <div class="kpi"><p class="kpi__rotulo">Sin alquilar</p>
+      <p class="kpi__valor">${r.vacantes}</p><p class="kpi__pie">unidades sin inquilino</p></div>`;
+
+  $('#texto-cierre').textContent =
+    `Guarda cómo terminó ${periodoLegible(DATOS.periodo)} (${r.pagados} de ${r.activos} cobrados) ` +
+    `y deja todos los contratos en "no pagado" para arrancar ${periodoLegible(siguientePeriodo(DATOS.periodo))}.`;
+
+  const v = conteoVencimientos();
+  $('#alertas').innerHTML = [
+    ['vencido','Contratos vencidos', v.vencido,'rojo'],
+    ['30','Vencen en 30 días', v.d30,'rojo'],
+    ['60','Vencen en 60 días', v.d60,'ambar'],
+    ['90','Vencen en 90 días', v.d90,'ambar'],
+    ['','Vigentes', v.vigente,'verde'],
+    ['sinfecha','Sin fecha cargada', v.sinfecha,'gris'],
+    ['vacante','Sin inquilino', v.vacante,'gris']
+  ].map(([f,rot,n,col]) => `
+    <button class="alerta alerta--${col}" data-filtro-vto="${f}">
+      <span class="alerta__n">${n}</span><span class="alerta__t">${rot}</span></button>`).join('');
+
+  $$('[data-filtro-vto]').forEach(b => b.addEventListener('click', () => {
+    $('#f-vto').value = b.dataset.filtroVto;
+    $('#f-estado').value = ''; $('#buscar').value = ''; filtroMes = '';
+    irAVista('contratos'); pintarTabla();
+  }));
+
+  const h = DATOS.historial;
+  $('#historico').innerHTML = h.length
+    ? [...h].reverse().map(m => `
+        <div class="fila" style="grid-template-columns:1fr auto auto;padding:.6rem 0">
+          <span class="celda-fuerte">${esc(periodoLegible(m.periodo))}</span>
+          <span class="celda-suave">${m.pagados} de ${m.activos} cobrados</span>
+          <span class="pastilla ${m.pagados === m.activos ? 'pastilla--verde' : 'pastilla--ambar'}">
+            ${m.activos ? Math.round(m.pagados/m.activos*100) : 0}%</span>
+        </div>`).join('')
+    : `<p class="celda-suave">Todavía no cerraste ningún mes. Cuando lo hagas, va a quedar acá el registro.</p>`;
+}
+
+/* =========================================================
+   6. CONTRATOS
+   ========================================================= */
+function hayFiltros(){
+  return !!($('#buscar').value.trim() || $('#f-estado').value ||
+            $('#f-tipo').value || $('#f-vto').value || filtroMes);
+}
+
+function contratosFiltrados(){
+  const q = normalizar($('#buscar').value.trim());
+  const estado = $('#f-estado').value, tipo = $('#f-tipo').value, vto = $('#f-vto').value;
+
+  return DATOS.contratos.filter(c => {
+    if (q) {
+      const heno = normalizar([c.locador, c.locatario, c.direccion, c.nro, c.depto,
+        (c.comentarios||[]).map(x => x.t).join(' ')].join(' '));
+      if (!heno.includes(q)) return false;
+    }
+    if (estado === 'si' && !c.pagado) return false;
+    if (estado === 'no' && c.pagado) return false;
+    if (tipo && c.tipo !== tipo) return false;
+    if (filtroMes && !(c.vto && String(c.vto).startsWith(filtroMes))) return false;
+    if (vto) {
+      const e = estadoVto(c);
+      if (vto === 'vencido' && e !== 'vencido') return false;
+      if (vto === 'sinfecha' && e !== 'sinfecha') return false;
+      if (vto === 'vacante' && e !== 'vacante') return false;
+      if (['30','60','90'].includes(vto)) {
+        const d = diasHasta(c.vto);
+        if (d === null || d < 0 || d > Number(vto)) return false;
+      }
+    }
+    return true;
+  });
+}
+
+function pastillaVto(c){
+  if (!c.locatario) return `<span class="pastilla pastilla--gris">Sin inquilino</span>`;
+  if (!c.vto) return `<span class="pastilla pastilla--gris">Sin fecha</span>`;
+  const d = diasHasta(c.vto), f = fechaCorta(c.vto);
+  if (d < 0) return `<span class="pastilla pastilla--rojo">Venció ${f}</span>`;
+  if (d <= 30) return `<span class="pastilla pastilla--rojo">${f} · ${d} días</span>`;
+  if (d <= 90) return `<span class="pastilla pastilla--ambar">${f} · ${d} días</span>`;
+  return `<span class="celda-suave">${f}</span>`;
+}
+
+function pintarTabla(){
+  const lista = contratosFiltrados();
+  const btn = $('#btn-limpiar');
+  btn.disabled = !hayFiltros();
+  btn.style.opacity = hayFiltros() ? '1' : '.45';
+  btn.style.cursor  = hayFiltros() ? 'pointer' : 'default';
+
+  $('#contador').textContent = lista.length === DATOS.contratos.length
+    ? `${lista.length} contratos` : `${lista.length} de ${DATOS.contratos.length}`;
+
+  if (!lista.length) {
+    $('#tabla').innerHTML = `<p class="sin-datos">No hay contratos que coincidan con esa búsqueda.</p>`;
+    return;
+  }
+
+  $('#tabla').innerHTML = lista.map(c => {
+    const unidad = [c.piso && `Piso ${esc(c.piso)}`, c.depto && `Dto. ${esc(c.depto)}`]
+      .filter(Boolean).join(' · ');
+    const n = (c.comentarios || []).length;
+    return `
+    <div class="fila fila--dato ${c.locatario && !c.pagado ? 'fila--pendiente' : ''}" data-id="${c.id}">
+      <span class="c-nro celda-suave">${esc(c.nro)}</span>
+      <span class="c-prop celda-fuerte">${esc(c.locador)}</span>
+      <span class="c-inq celda-suave">${c.locatario ? esc(c.locatario) : '<em>sin inquilino</em>'}</span>
+      <span class="c-dir">
+        <span class="celda-suave">${esc(c.direccion)}</span>
+        ${unidad ? `<span class="celda-sub">${unidad}</span>` : ''}
+      </span>
+      <span class="c-tipo"><span class="pastilla pastilla--tipo">${esc(c.tipo)}</span></span>
+      <span class="c-vto">${pastillaVto(c)}</span>
+      <span class="c-pago">
+        ${c.locatario ? `
+          <button class="pago" data-pago="${c.id}" aria-pressed="${c.pagado}"
+                  aria-label="Marcar cobro de ${esc(c.locador)}">
+            <span class="pago__pista"></span>
+            <span class="pago__texto">${c.pagado ? 'Pagó' : 'Debe'}</span>
+          </button>` : ''}
+      </span>
+      <span class="c-acc">
+        <span class="wa-menu">
+          <button class="icono-btn icono-btn--wa" data-wa-abrir="${c.id}"
+                  title="Enviar WhatsApp" aria-label="Enviar WhatsApp">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.38-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35z"/><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.87 9.87 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.13h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.11.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.36c0-4.54 3.7-8.24 8.24-8.24 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.54-3.7 8.21-8.25 8.21z"/></svg>
+          </button>
+        </span>
+        <button class="icono-btn ${n ? 'icono-btn--con-notas' : ''}" data-comentarios="${c.id}"
+                title="Comentarios del inquilino" aria-label="Comentarios del inquilino">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.3-.6L3 21l1.8-5a8.2 8.2 0 0 1-.8-3.5 8.4 8.4 0 0 1 8.5-8.4 8.4 8.4 0 0 1 8.5 7.9z"/></svg>
+          ${n ? `<span class="icono-btn__n">${n}</span>` : ''}
+        </button>
+        <button class="icono-btn" data-editar="${c.id}" title="Editar contrato" aria-label="Editar contrato">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+        </button>
+      </span>
+    </div>`;
+  }).join('');
+
+  $$('[data-pago]').forEach(b => b.addEventListener('click', () => alternarPago(b.dataset.pago)));
+  $$('[data-editar]').forEach(b => b.addEventListener('click', () => abrirEditor(b.dataset.editar)));
+  $$('[data-comentarios]').forEach(b => b.addEventListener('click', () => abrirComentarios(b.dataset.comentarios)));
+  $$('[data-wa-abrir]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); abrirMenuWa(b); }));
+}
+
+/**
+ * Marca el cobro. Primero cambia en pantalla para que se sienta
+ * inmediato, después lo manda a la planilla. Si falla, vuelve atrás
+ * y avisa: nunca queda algo marcado que no se haya guardado.
+ */
+async function alternarPago(id){
+  const c = DATOS.contratos.find(x => x.id === id);
+  if (!c) return;
+  const antes = c.pagado;
+  c.pagado = !antes;
+  pintarTabla(); pintarPanel(); pintarPropietarios();
+
+  try {
+    await servidor('marcarPago', id, c.pagado);
+  } catch (e) {
+    c.pagado = antes;
+    pintarTabla(); pintarPanel(); pintarPropietarios();
+    mostrarError('No se pudo guardar el cobro en la planilla. Revisá la conexión e intentá de nuevo.');
+  }
+}
+
+/* =========================================================
+   7. PROPIETARIOS
+   ========================================================= */
+function agrupadoPorPropietario(){
+  const mapa = new Map();
+  DATOS.contratos.forEach(c => {
+    if (!mapa.has(c.locador)) mapa.set(c.locador, []);
+    mapa.get(c.locador).push(c);
+  });
+  return [...mapa.entries()].map(([nombre, unidades]) => {
+    const activos = unidades.filter(u => u.locatario);
+    return { nombre, unidades, total:unidades.length, activos:activos.length,
+             pagados:activos.filter(u => u.pagado).length,
+             pendientes:activos.filter(u => !u.pagado).length };
+  });
+}
+
+function pintarPropietarios(){
+  const todos = agrupadoPorPropietario();
+  let grupos = todos;
+  const q = normalizar($('#buscar-prop').value.trim());
+  if (q) grupos = grupos.filter(g => normalizar(g.nombre).includes(q));
+
+  const orden = $('#f-prop-orden').value;
+  grupos = [...grupos].sort((a,b) =>
+      orden === 'unidades'   ? b.total - a.total || a.nombre.localeCompare(b.nombre,'es')
+    : orden === 'alfabetico' ? a.nombre.localeCompare(b.nombre,'es')
+    : (b.pendientes - a.pendientes) || (b.total - a.total) || a.nombre.localeCompare(b.nombre,'es'));
+
+  $('#sub-propietarios').textContent =
+    `${todos.length} propietarios · ${todos.filter(g => g.total > 1).length} administran más de una unidad`;
+
+  if (!grupos.length) {
+    $('#propietarios').innerHTML = `<p class="sin-datos">Ningún propietario coincide con esa búsqueda.</p>`;
+    return;
+  }
+
+  $('#propietarios').innerHTML = grupos.map(g => {
+    const color = g.pendientes === 0 ? 'var(--verde)' : g.pagados === 0 ? 'var(--rojo)' : 'var(--ambar)';
+    return `
+    <article class="prop">
+      <div class="prop__cabeza">
+        <h3 class="prop__nombre">${esc(g.nombre)}</h3>
+        <span class="prop__marcador" style="color:${color}">${g.pagados}/${g.activos}</span>
+      </div>
+      <div class="prop__unidades">
+        ${g.unidades.map(u => {
+          const unidad = [u.piso && `P${esc(u.piso)}`, u.depto && `Dto ${esc(u.depto)}`].filter(Boolean).join(' ');
+          const d = u.vto ? diasHasta(u.vto) : null;
+          return `
+            <div class="unidad">
+              ${u.locatario
+                ? `<span class="unidad__punto ${u.pagado ? '' : 'unidad__punto--no'}"></span>`
+                : `<span class="unidad__punto" style="background:var(--gris-claro)"></span>`}
+              <span class="unidad__texto">
+                ${esc(u.direccion)} ${unidad ? `<span class="celda-sub">${unidad}</span>` : ''}<br>
+                <span class="celda-sub">${u.locatario ? esc(u.locatario) : 'sin inquilino'}</span>
+              </span>
+              <span class="unidad__vto" ${d !== null && d <= 90 ? 'style="color:var(--rojo)"' : ''}>
+                ${u.vto ? fechaCorta(u.vto) : '—'}</span>
+            </div>`;
+        }).join('')}
+      </div>
+      <p class="prop__pie">${g.total} ${g.total === 1 ? 'unidad' : 'unidades'}${
+        g.pendientes ? ` · falta cobrar ${g.pendientes}` : ' · todo cobrado'}</p>
+    </article>`;
+  }).join('');
+}
+
+/* =========================================================
+   8. VENCIMIENTOS
+   ========================================================= */
+function pintarCalendario(){
+  const meses = [];
+  for (let i = 0; i < 18; i++) {
+    const f = new Date(HOY.getFullYear(), HOY.getMonth() + i, 1);
+    meses.push({ clave:`${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}`,
+                 nombre:MESES[f.getMonth()], anio:f.getFullYear(), n:0 });
+  }
+  DATOS.contratos.forEach(c => {
+    if (!c.vto) return;
+    const m = meses.find(x => String(c.vto).startsWith(x.clave));
+    if (m) m.n++;
+  });
+  const vencidos = DATOS.contratos.filter(c => c.vto && diasHasta(c.vto) < 0).length;
+
+  $('#calendario').innerHTML =
+    (vencidos ? `
+      <button class="mes" data-mes="vencido" style="border-color:var(--rojo)">
+        <span class="mes__nombre" style="color:var(--rojo)">Vencidos</span>
+        <span class="mes__anio">antes de hoy</span>
+        <span class="mes__n" style="color:var(--rojo)">${vencidos}</span>
+        <span class="mes__etq">a renovar</span></button>` : '') +
+    meses.map((m,i) => `
+      <button class="mes ${m.n ? '' : 'mes--vacio'} ${i === 0 ? 'mes--actual' : ''}"
+              data-mes="${m.clave}" ${m.n ? '' : 'disabled'}>
+        <span class="mes__nombre">${m.nombre}</span><span class="mes__anio">${m.anio}</span>
+        <span class="mes__n">${m.n || '·'}</span>
+        <span class="mes__etq">${m.n === 1 ? 'contrato' : 'contratos'}</span></button>`).join('');
+
+  $$('[data-mes]').forEach(b => b.addEventListener('click', () => {
+    const v = b.dataset.mes;
+    $('#f-estado').value = ''; $('#f-tipo').value = ''; $('#buscar').value = '';
+    if (v === 'vencido') { $('#f-vto').value = 'vencido'; filtroMes = ''; }
+    else { $('#f-vto').value = ''; filtroMes = v; }
+    irAVista('contratos'); pintarTabla();
+    if (v !== 'vencido') avisar(`Mostrando los contratos que vencen en ${periodoLegible(v)}`);
+  }));
+
+  const proximos = DATOS.contratos
+    .filter(c => c.vto && diasHasta(c.vto) <= 90)
+    .sort((a,b) => String(a.vto).localeCompare(String(b.vto)));
+
+  $('#linea-tiempo').innerHTML = proximos.length ? proximos.map(c => {
+    const d = diasHasta(c.vto);
+    const color = d <= 30 ? 'rojo' : 'ambar';
+    const cuando = d < 0 ? `venció hace ${Math.abs(d)} días` : d === 0 ? 'vence hoy' : `faltan ${d} días`;
+    return `
+      <div class="hito hito--${color}">
+        <span class="hito__fecha">${fechaCorta(c.vto)}<span class="hito__dias">${cuando}</span></span>
+        <span class="hito__cuerpo">
+          <span class="hito__quien">${esc(c.locador)}</span>
+          <span class="hito__donde">${esc(c.direccion)} — ${c.locatario ? esc(c.locatario) : 'sin inquilino'}</span>
+        </span>
+        <span class="pastilla pastilla--tipo">${esc(c.tipo)}</span>
+      </div>`;
+  }).join('') : `<p class="sin-datos">No hay contratos por vencer en los próximos noventa días.</p>`;
+}
+
+/* =========================================================
+   8b. WHATSAPP POR CONTRATO
+   Dos mensajes fijos, uno para el propietario y otro para el
+   inquilino. Abre WhatsApp Web o la app con el texto ya escrito;
+   la persona lo revisa y decide si lo manda.
+   ========================================================= */
+function soloDigitos_(v){ return String(v ?? '').replace(/\D/g, ''); }
+
+/**
+ * Sin un teléfono cargado por contrato, abre el buscador de contactos
+ * de WhatsApp con el mensaje ya escrito: elegís a la persona vos y lo
+ * mandás. Si el contrato tuviera un teléfono guardado, se lo pasaría
+ * directo a wa.me y listo.
+ */
+function linkWhatsApp_(telefono, mensaje){
+  const n = soloDigitos_(telefono);
+  if (n) return `https://wa.me/${n}?text=${encodeURIComponent(mensaje)}`;
+  return `https://api.whatsapp.com/send?text=${encodeURIComponent(mensaje)}`;
+}
+
+function cerrarMenuWa(){ $$('.wa-opciones').forEach(m => m.remove()); }
+document.addEventListener('click', cerrarMenuWa);
+
+function abrirMenuWa(boton){
+  const yaAbierto = boton.parentElement.querySelector('.wa-opciones');
+  cerrarMenuWa();
+  if (yaAbierto) return;
+
+  const id = boton.dataset.waAbrir;
+  const c = DATOS.contratos.find(x => x.id === id);
+  if (!c) return;
+
+  const nombreProp = (c.locador || '').split(',')[1]?.trim() || c.locador || '';
+  const msjProp = `Hola ${nombreProp}, ya se encuentra lista la liquidación.`;
+  const msjInq  = `Te estamos esperando!`;
+
+  const menu = document.createElement('div');
+  menu.className = 'wa-opciones';
+  menu.innerHTML = `
+    <button data-ir-prop>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.38-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35z"/></svg>
+      Al propietario
+    </button>
+    <button data-ir-inq ${c.locatario ? '' : 'disabled'}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.38-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35z"/></svg>
+      ${c.locatario ? 'Al inquilino' : 'Sin inquilino'}
+    </button>`;
+  boton.parentElement.appendChild(menu);
+
+  menu.querySelector('[data-ir-prop]').addEventListener('click', ev => {
+    ev.stopPropagation();
+    window.open(linkWhatsApp_('', msjProp), '_blank', 'noopener');
+    cerrarMenuWa();
+  });
+  const btnInq = menu.querySelector('[data-ir-inq]');
+  if (!btnInq.disabled) {
+    btnInq.addEventListener('click', ev => {
+      ev.stopPropagation();
+      window.open(linkWhatsApp_('', msjInq), '_blank', 'noopener');
+      cerrarMenuWa();
+    });
+  }
+}
+
+/* =========================================================
+   9. COMENTARIOS
+   ========================================================= */
+function abrirComentarios(id){
+  const c = DATOS.contratos.find(x => x.id === id);
+  if (!c) return;
+  if (!c.comentarios) c.comentarios = [];
+
+  const unidad = [c.piso && `Piso ${esc(c.piso)}`, c.depto && `Dto. ${esc(c.depto)}`]
+    .filter(Boolean).join(' · ');
+  const lista = [...c.comentarios].sort((a,b) => String(b.f).localeCompare(String(a.f)));
+
+  modal({
+    titulo:'Comentarios del inquilino',
+    cuerpo:`
+      <div class="ficha-contrato">
+        <strong>${c.locatario ? esc(c.locatario) : 'Unidad sin inquilino'}</strong>
+        ${esc(c.direccion)}${unidad ? ` — ${unidad}` : ''}<br>
+        <span class="celda-sub">Propietario: ${esc(c.locador)}</span>
+      </div>
+      <div class="comentarios">
+        ${lista.length ? lista.map(m => `
+          <div class="comentario">
+            <div class="comentario__cabeza">
+              <span class="comentario__fecha">${fechaHora(m.f)}</span>
+              <button class="borrar-comentario" data-borrar="${esc(m.f)}" aria-label="Borrar este comentario">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <p class="comentario__texto">${esc(m.t)}</p>
+          </div>`).join('')
+        : `<p class="celda-suave">Todavía no hay comentarios para esta unidad.</p>`}
+      </div>
+      <div class="campo">
+        <label for="nuevo-comentario">Agregar un comentario</label>
+        <textarea id="nuevo-comentario" placeholder="Qué pidió o avisó. Ej.: problema con el termotanque, pide prórroga, quiere renovar."></textarea>
+      </div>`,
+    botones:[
+      { texto:'Cerrar', clase:'btn--claro', accion: cerrar => cerrar() },
+      { texto:'Agregar', clase:'btn--dorado', accion: async (cerrar, boton) => {
+        const t = $('#nuevo-comentario').value.trim();
+        if (!t) { $('#nuevo-comentario').focus(); return; }
+        boton.disabled = true; boton.textContent = 'Guardando…';
+        try {
+          const f = await servidor('agregarComentario', id, t);
+          c.comentarios.push({ f, t });
+          pintarTabla(); cerrar(); abrirComentarios(id); avisar('Comentario guardado');
+        } catch {
+          boton.disabled = false; boton.textContent = 'Agregar';
+          mostrarError('No se pudo guardar el comentario.');
+        }
+      }}
+    ]
+  });
+
+  $$('[data-borrar]').forEach(b => b.addEventListener('click', async () => {
+    const f = b.dataset.borrar;
+    b.disabled = true;
+    try {
+      await servidor('borrarComentario', id, f);
+      c.comentarios = c.comentarios.filter(m => String(m.f) !== f);
+      pintarTabla(); $('#contenedor-modal').innerHTML = ''; abrirComentarios(id);
+    } catch {
+      b.disabled = false;
+      mostrarError('No se pudo borrar el comentario.');
+    }
+  }));
+}
+
+/* =========================================================
+   9b. ACTUALIZACIONES POR IPC
+   ========================================================= */
+let ACTUALIZACIONES = null;   // se pide una sola vez por sesión
+
+function formatoMonto_(n){
+  return '$' + Math.round(n).toLocaleString('es-AR');
+}
+function formatoPct_(n){
+  return (n * 100).toLocaleString('es-AR', { minimumFractionDigits:1, maximumFractionDigits:1 }) + '%';
+}
+
+async function pintarActualizaciones(forzar){
+  const caja = $('#caja-actualizaciones');
+  if (!ACTUALIZACIONES || forzar) {
+    caja.innerHTML = `<p class="sin-datos">Calculando con el índice del INDEC…</p>`;
+    try {
+      ACTUALIZACIONES = await servidor('obtenerActualizaciones');
+    } catch {
+      caja.innerHTML = `<p class="sin-datos">No se pudo traer el cálculo. Probá el botón Actualizar de arriba.</p>`;
+      return;
+    }
+  }
+
+  const ultimo = ACTUALIZACIONES.ipc_actualizado_hasta;
+  $('#sub-actualizaciones').textContent = ultimo
+    ? `Calculado con el Índice de Precios al Consumidor (INDEC), nivel general. Dato oficial más reciente: ${periodoLegible(ultimo)}.`
+    : `Calculado con el Índice de Precios al Consumidor (INDEC), nivel general.`;
+
+  const lista = [...ACTUALIZACIONES.calculos].sort((a,b) => a.dias_proxima_actualizacion - b.dias_proxima_actualizacion);
+
+  if (!lista.length) {
+    caja.innerHTML = `<p class="sin-datos">Todavía ningún contrato tiene monto y periodicidad cargados.</p>`;
+    return;
+  }
+
+  caja.innerHTML = `
+    <div class="fila-act fila-act--cabeza">
+      <span>Propietario</span><span>Dirección</span><span>Próxima actualización</span><span>Aumento</span><span>Nuevo monto</span>
+    </div>` +
+    lista.map(c => {
+      const unidad = [c.piso && `P${esc(c.piso)}`, c.depto && `Dto ${esc(c.depto)}`].filter(Boolean).join(' ');
+      const d = c.dias_proxima_actualizacion;
+      const cuando = d < 0 ? `venció hace ${Math.abs(d)} días` : d === 0 ? 'hoy' : `en ${d} días`;
+      const urgente = d <= 15;
+      return `
+      <div class="fila-act">
+        <span class="celda-fuerte">${esc(c.locador)}</span>
+        <span class="celda-suave">${esc(c.direccion)} ${unidad ? `<span class="celda-sub">${unidad}</span>` : ''}</span>
+        <span class="pastilla ${urgente ? 'pastilla--rojo' : 'pastilla--ambar'}">${fechaCorta(c.proxima_actualizacion)} · ${cuando}</span>
+        <span class="fila-act__coef">+${formatoPct_(c.porcentaje)}</span>
+        <span>
+          <span class="fila-act__monto">${formatoMonto_(c.monto_actualizado)}</span><br>
+          <span class="fila-act__antes">${formatoMonto_(c.monto_base)}</span>
+        </span>
+      </div>`;
+    }).join('');
+}
+
+async function calcularLibre(){
+  const boton = $('#btn-calc-libre');
+  const monto = Number($('#calc-monto').value);
+  const inicio = $('#calc-inicio').value;
+  const meses = $('#calc-meses').value;
+  const res = $('#resultado-calc-libre');
+
+  if (!monto || !inicio) {
+    res.innerHTML = `<p class="celda-suave" style="margin-top:1rem">Completá el monto y la fecha de inicio.</p>`;
+    return;
+  }
+  boton.disabled = true; boton.textContent = 'Calculando…';
+  try {
+    const c = await servidor('calcularSimulacion', monto, inicio, meses);
+    res.innerHTML = `
+      <div class="res-calc">
+        <div class="res-calc__linea"><span>Última actualización</span><strong>${periodoLegible(c.ultima_actualizacion)}</strong></div>
+        <div class="res-calc__linea"><span>Aumento acumulado</span><strong>+${formatoPct_(c.porcentaje)}</strong></div>
+        <div class="res-calc__linea"><span>Monto actualizado</span><strong>${formatoMonto_(c.monto_actualizado)}</strong></div>
+        <div class="res-calc__linea"><span>Próxima actualización</span><strong>${fechaCorta(c.proxima_actualizacion)}</strong></div>
+        <p class="res-calc__aviso">Sobre un monto base de ${formatoMonto_(c.monto_base)}, calculado con IPC nivel general (INDEC).</p>
+      </div>`;
+  } catch (e) {
+    res.innerHTML = `<p class="celda-suave" style="margin-top:1rem">${esc(e.message)}</p>`;
+  }
+  boton.disabled = false; boton.textContent = 'Calcular';
+}
+
+/* =========================================================
+   10. ALTA Y EDICIÓN
+   ========================================================= */
+const TIPOS = ['Departamento','Casa','Local','Cochera','Galpon','Duplex','Sin especificar'];
+
+function abrirEditor(id){
+  const nuevo = !id;
+  const c = nuevo
+    ? { id:'', nro:'', locador:'', locatario:'', direccion:'', piso:'', depto:'',
+        tipo:'Departamento', pagado:false, firmado:false, inicio:'', vto:'',
+        monto:0, actualizacion_meses:0, notas:'', comentarios:[] }
+    : DATOS.contratos.find(x => x.id === id);
+  if (!c) return;
+
+  const props = [...new Set(DATOS.contratos.map(x => x.locador))].sort((a,b)=>a.localeCompare(b,'es'));
+
+  modal({
+    titulo: nuevo ? 'Nuevo contrato' : 'Editar contrato',
+    cuerpo:`
+      <div class="rejilla">
+        <div class="campo campo--largo"><label for="e-locador">Propietario</label>
+          <input id="e-locador" list="lista-props" value="${esc(c.locador)}" placeholder="APELLIDO, Nombre">
+          <datalist id="lista-props">${props.map(p=>`<option value="${esc(p)}">`).join('')}</datalist></div>
+        <div class="campo campo--largo"><label for="e-locatario">Inquilino <span class="celda-sub">(vacío = unidad sin alquilar)</span></label>
+          <input id="e-locatario" value="${esc(c.locatario)}"></div>
+        <div class="campo campo--largo"><label for="e-direccion">Dirección</label>
+          <input id="e-direccion" value="${esc(c.direccion)}"></div>
+        <div class="campo"><label for="e-piso">Piso</label><input id="e-piso" value="${esc(c.piso)}"></div>
+        <div class="campo"><label for="e-depto">Depto.</label><input id="e-depto" value="${esc(c.depto)}"></div>
+        <div class="campo"><label for="e-tipo">Tipo</label>
+          <select id="e-tipo">${TIPOS.map(t=>`<option ${t===c.tipo?'selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="campo"><label for="e-nro">N° de administración</label><input id="e-nro" value="${esc(c.nro)}"></div>
+        <div class="campo"><label for="e-inicio">Inicio del contrato</label><input type="date" id="e-inicio" value="${esc(c.inicio)}"></div>
+        <div class="campo"><label for="e-vto">Vencimiento</label><input type="date" id="e-vto" value="${esc(c.vto)}"></div>
+        <div class="campo">
+          <label for="e-firmado">Contrato firmado</label>
+          <select id="e-firmado">
+            <option value="no" ${!c.firmado ? 'selected' : ''}>No</option>
+            <option value="si" ${c.firmado ? 'selected' : ''}>Sí</option>
+          </select>
+        </div>
+        <div class="campo campo--largo" style="border-top:1px solid var(--linea);padding-top:1rem;margin-top:.2rem">
+          <label style="margin-bottom:.1rem">Actualización por IPC <span class="celda-sub">(opcional, para la pestaña Actualizaciones)</span></label>
+        </div>
+        <div class="campo">
+          <label for="e-monto">Monto del alquiler</label>
+          <input type="number" id="e-monto" min="0" step="1000" value="${c.monto || ''}">
+        </div>
+        <div class="campo">
+          <label for="e-actualiza">Actualiza cada</label>
+          <select id="e-actualiza">
+            <option value="" ${!c.actualizacion_meses ? 'selected' : ''}>Sin definir</option>
+            <option value="3"  ${c.actualizacion_meses==3 ? 'selected' : ''}>3 meses</option>
+            <option value="4"  ${c.actualizacion_meses==4 ? 'selected' : ''}>4 meses</option>
+            <option value="6"  ${c.actualizacion_meses==6 ? 'selected' : ''}>6 meses</option>
+            <option value="12" ${c.actualizacion_meses==12 ? 'selected' : ''}>12 meses</option>
+          </select>
+        </div>
+        <div class="campo campo--largo"><label for="e-notas">Notas</label>
+          <textarea id="e-notas">${esc(c.notas)}</textarea></div>
+      </div>`,
+    botones:[
+      ...(nuevo ? [] : [{ texto:'Eliminar', clase:'btn--peligro', accion: async (cerrar, boton) => {
+        if (!confirm(`¿Eliminar el contrato de ${c.locador}? Se borra de la planilla junto con sus comentarios.`)) return;
+        boton.disabled = true; boton.textContent = 'Eliminando…';
+        try {
+          await servidor('eliminarContrato', c.id);
+          DATOS.contratos = DATOS.contratos.filter(x => x.id !== c.id);
+          redibujar(); cerrar(); avisar('Contrato eliminado');
+        } catch {
+          boton.disabled = false; boton.textContent = 'Eliminar';
+          mostrarError('No se pudo eliminar.');
+        }
+      }}]),
+      { texto:'Cancelar', clase:'btn--claro', accion: cerrar => cerrar() },
+      { texto:'Guardar', clase:'btn--dorado', accion: async (cerrar, boton) => {
+        const v = s => $(s).value.trim();
+        if (!v('#e-locador')) { alert('El propietario no puede quedar vacío.'); return; }
+        const datos = {
+          id: c.id, pagado: c.pagado,
+          nro:v('#e-nro'), locador:v('#e-locador'), locatario:v('#e-locatario'),
+          direccion:v('#e-direccion'), piso:v('#e-piso'), depto:v('#e-depto'),
+          tipo:$('#e-tipo').value, inicio:v('#e-inicio'), vto:v('#e-vto'), notas:v('#e-notas'),
+          firmado: $('#e-firmado').value === 'si',
+          monto: Number(v('#e-monto')) || 0,
+          actualizacion_meses: Number($('#e-actualiza').value) || 0
+        };
+        boton.disabled = true; boton.textContent = 'Guardando…';
+        try {
+          const idFinal = await servidor('guardarContrato', datos);
+          if (nuevo) DATOS.contratos.push({ ...datos, id:idFinal, comentarios:[] });
+          else Object.assign(c, datos);
+          redibujar(); cerrar();
+          avisar(nuevo ? 'Contrato agregado' : 'Cambios guardados');
+        } catch {
+          boton.disabled = false; boton.textContent = 'Guardar';
+          mostrarError('No se pudo guardar en la planilla.');
+        }
+      }}
+    ]
+  });
+}
+
+/* =========================================================
+   11. CIERRE DE MES
+   ========================================================= */
+function cerrarMes(){
+  const r = resumen();
+  modal({
+    titulo:'Cerrar el mes',
+    cuerpo:`
+      <div class="aviso-modal">
+        <strong>Esto reinicia todos los cobros.</strong>
+        Los ${r.activos} contratos van a quedar marcados como "debe", también para la otra computadora.
+        No se puede deshacer.
+      </div>
+      <p style="font-size:.92rem;line-height:1.6">
+        Se va a guardar el cierre de <strong>${periodoLegible(DATOS.periodo)}</strong>
+        con ${r.pagados} de ${r.activos} contratos cobrados (${r.porcentaje}%),
+        y el panel va a pasar a <strong>${periodoLegible(siguientePeriodo(DATOS.periodo))}</strong>.
+      </p>
+      <div class="campo" style="margin-top:1.25rem">
+        <label for="confirmacion">Para confirmar, escribí <strong>CERRAR</strong></label>
+        <input id="confirmacion" autocomplete="off" placeholder="CERRAR">
+      </div>`,
+    botones:[
+      { texto:'Cancelar', clase:'btn--claro', accion: cerrar => cerrar() },
+      { texto:'Cerrar el mes', clase:'btn--dorado', accion: async (cerrar, boton) => {
+        if ($('#confirmacion').value.trim().toUpperCase() !== 'CERRAR') {
+          alert('Escribí CERRAR para confirmar.'); return;
+        }
+        boton.disabled = true; boton.textContent = 'Cerrando…';
+        try {
+          DATOS = await servidor('cerrarMes');
+          redibujar(); cerrar();
+          avisar(`Mes cerrado. Arrancó ${periodoLegible(DATOS.periodo)} con todo en cero.`);
+        } catch {
+          boton.disabled = false; boton.textContent = 'Cerrar el mes';
+          mostrarError('No se pudo cerrar el mes. No se cambió nada.');
+        }
+      }}
+    ]
+  });
+}
+
+/* =========================================================
+   12. VENTANA MODAL
+   ========================================================= */
+function modal({ titulo, cuerpo, botones }){
+  const cont = $('#contenedor-modal');
+  cont.innerHTML = `
+    <div class="modal" role="dialog" aria-modal="true" aria-label="${esc(titulo)}">
+      <div class="modal__caja">
+        <div class="modal__cabeza">
+          <h3>${esc(titulo)}</h3>
+          <button class="icono-btn" id="cerrar-modal" aria-label="Cerrar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal__cuerpo">${cuerpo}</div>
+        <div class="modal__pie" id="pie-modal"></div>
+      </div>
+    </div>`;
+
+  const cerrar = () => { cont.innerHTML = ''; document.removeEventListener('keydown', alEscapar); };
+  const alEscapar = e => { if (e.key === 'Escape') cerrar(); };
+  document.addEventListener('keydown', alEscapar);
+  $('#cerrar-modal').addEventListener('click', cerrar);
+  $('.modal').addEventListener('mousedown', e => { if (e.target.classList.contains('modal')) cerrar(); });
+
+  const pie = $('#pie-modal');
+  botones.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = `btn ${b.clase}`;
+    btn.textContent = b.texto;
+    btn.addEventListener('click', () => b.accion(cerrar, btn));
+    pie.appendChild(btn);
+  });
+  setTimeout(() => $('.modal__cuerpo input, .modal__cuerpo select')?.focus(), 60);
+}
+
+function hayModalAbierto(){ return !!$('.modal'); }
+
+/* =========================================================
+   13. NAVEGACIÓN Y ARRANQUE
+   ========================================================= */
+function irAVista(nombre){
+  $$('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.vista === nombre)));
+  $$('.vista').forEach(v => v.classList.toggle('activa', v.id === `vista-${nombre}`));
+  window.scrollTo({ top:0, behavior:'smooth' });
+  if (nombre === 'actualizaciones' && !ACTUALIZACIONES) pintarActualizaciones(false);
+}
+
+function redibujar(){
+  pintarPanel(); pintarTabla(); pintarPropietarios(); pintarCalendario();
+}
+
+/** Trae lo que haya cargado la otra computadora. */
+async function refrescar(silencioso){
+  const icono = $('#icono-refrescar');
+  if (!silencioso) icono.classList.add('girando');
+  try {
+    DATOS = await servidor('refrescar');
+    redibujar();
+    if ($('#vista-actualizaciones').classList.contains('activa')) pintarActualizaciones(true);
+    if (!silencioso) avisar('Datos actualizados');
+  } catch {
+    if (!silencioso) mostrarError('No se pudo actualizar. Revisá la conexión.');
+  } finally {
+    icono.classList.remove('girando');
+  }
+}
+
+function iniciarApp(){
+  $('#marca').textContent = DATOS.nombreOficina || 'Comincini';
+  $('#barra-usuario').textContent = DATOS.usuario || '';
+
+  const tipos = [...new Set(DATOS.contratos.map(c => c.tipo))].sort((a,b)=>a.localeCompare(b,'es'));
+  $('#f-tipo').innerHTML = `<option value="">Todos los tipos</option>` +
+    tipos.map(t => `<option>${esc(t)}</option>`).join('');
+
+  $$('.tab').forEach(t => t.addEventListener('click', () => irAVista(t.dataset.vista)));
+  ['#buscar','#f-estado','#f-tipo','#f-vto'].forEach(s =>
+    $(s).addEventListener('input', () => { filtroMes = ''; pintarTabla(); }));
+  $('#btn-limpiar').addEventListener('click', () => {
+    if (!hayFiltros()) { avisar('No hay filtros aplicados.'); return; }
+    $('#buscar').value=''; $('#f-estado').value=''; $('#f-tipo').value=''; $('#f-vto').value='';
+    filtroMes=''; pintarTabla();
+    avisar('Listo, se ven todos los contratos otra vez.');
+  });
+  $('#btn-nuevo').addEventListener('click', () => abrirEditor(null));
+  $('#btn-cerrar-mes').addEventListener('click', cerrarMes);
+  $('#btn-refrescar').addEventListener('click', () => refrescar(false));
+  $('#btn-bloquear').addEventListener('click', () => location.reload());
+  $('#buscar-prop').addEventListener('input', pintarPropietarios);
+  $('#f-prop-orden').addEventListener('input', pintarPropietarios);
+  $('#btn-calc-libre').addEventListener('click', calcularLibre);
+
+  redibujar();
+  $('#acceso').classList.add('oculto');
+  $('#app').classList.remove('oculto');
+
+  /* Cada minuto trae lo que cargó la otra computadora, salvo que
+     haya una ventana abierta (no le vamos a mover el piso a nadie). */
+  setInterval(() => { if (!hayModalAbierto()) refrescar(true); }, 60000);
+}
+
+/* ---------- Pantalla de clave ---------- */
+$('#ver-clave').addEventListener('click', () => {
+  const i = $('#clave');
+  i.type = i.type === 'password' ? 'text' : 'password';
+  i.focus();
+});
+
+$('#form-clave').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('#btn-entrar'), err = $('#error-clave');
+  err.textContent = '';
+  btn.disabled = true; btn.textContent = 'Abriendo…';
+  try {
+    const r = await servidor('verificarClave', $('#clave').value);
+    if (r.ok) { DATOS = r.datos; iniciarApp(); return; }
+    err.textContent =
+      r.motivo === 'cuenta' ? 'Tu cuenta de Google no está habilitada para entrar.'
+    : r.motivo === 'sin_configurar' ? 'Falta configurar la clave en la planilla.'
+    : 'Clave incorrecta.';
+  } catch {
+    err.textContent = 'No se pudo conectar con la planilla.';
+  }
+  btn.disabled = false; btn.textContent = 'Entrar';
+  $('#clave').select();
+});
+
+/* La pantalla de carga se va apenas está todo listo */
+window.addEventListener('load', () => {
+  $('#cargando').remove();
+  $('#acceso').classList.remove('oculto');
+  $('#clave').focus();
+});
+</script>
+</body>
+</html>
