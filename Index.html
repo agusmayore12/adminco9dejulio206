@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es-AR">
 <head>
-<base target="_top">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -752,14 +751,40 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
    Cada llamada va a la planilla. Devuelve una promesa para
    poder usar async/await con comodidad.
    ========================================================= */
-function servidor(funcion){
-  const args = Array.prototype.slice.call(arguments, 1);
-  return new Promise((ok, error) => {
-    google.script.run
-      .withSuccessHandler(ok)
-      .withFailureHandler(e => error(new Error(e && e.message ? e.message : String(e))))
-      [funcion].apply(null, args);
+/**
+ * URL_SCRIPT: pegá acá la URL de tu implementación de Apps Script,
+ * la que termina en /exec. La sacás de: editor de Apps Script →
+ * Implementar → Administrar implementaciones.
+ *
+ * Ejemplo:
+ * const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycb.../exec';
+ */
+const URL_SCRIPT = 'PEGÁ_ACÁ_TU_URL_DE_APPS_SCRIPT';
+
+/**
+ * Llama a una función del servidor (Codigo.gs) vía fetch(), porque este
+ * HTML vive en GitHub Pages y no en Apps Script: google.script.run no
+ * existe acá, así que hablamos con el script publicado como si fuera
+ * cualquier API web.
+ */
+async function servidor(funcion, ...args){
+  const respuesta = await fetch(URL_SCRIPT, {
+    method: 'POST',
+    // 'text/plain' evita que el navegador dispare una petición previa
+    // (preflight OPTIONS) que Apps Script no responde bien.
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ accion: funcion, params: args })
   });
+
+  if (!respuesta.ok) {
+    throw new Error('El servidor respondió ' + respuesta.status);
+  }
+
+  const datos = await respuesta.json();
+  if (!datos.ok) {
+    throw new Error(datos.error || 'Error desconocido del servidor');
+  }
+  return datos.resultado;
 }
 
 function mostrarError(texto){
