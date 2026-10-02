@@ -256,7 +256,11 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
   max-width:100%;overflow:hidden;text-overflow:ellipsis;
 }
 .c-prop,.c-inq,.c-dir{min-width:0;overflow:hidden}
-.c-prop .celda-fuerte,.c-inq{text-overflow:ellipsis;white-space:nowrap;overflow:hidden;display:block}
+.c-prop{display:flex;flex-direction:column;gap:.3rem}
+.c-prop .celda-fuerte{text-overflow:ellipsis;white-space:nowrap;overflow:hidden;display:block}
+.c-prop__estados{display:flex;flex-wrap:wrap;gap:.3rem}
+.c-prop__estados .pastilla{font-size:.64rem;padding:.1rem .45rem;white-space:nowrap}
+.c-inq{text-overflow:ellipsis;white-space:nowrap;overflow:hidden;display:block}
 .c-dir .celda-suave,.c-dir .celda-sub{display:block;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
 .pastilla--rojo{background:var(--rojo-fondo);color:var(--rojo)}
 .pastilla--ambar{background:var(--ambar-fondo);color:var(--ambar)}
@@ -499,9 +503,13 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
 /* ---------- WhatsApp por fila ---------- */
 .wa-menu{position:relative}
 .wa-opciones{
-  position:absolute;top:calc(100% + 6px);right:0;z-index:60;
+  /* position:fixed (no absolute) y se agrega directo a <body>: así el menú
+     nunca queda recortado por el overflow:hidden de la tabla, sin importar
+     en qué fila esté (incluida la última del listado). La posición exacta
+     la calcula abrirMenuWa() según dónde está el botón en pantalla. */
+  position:fixed;z-index:500;
   background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio-sm);
-  box-shadow:0 10px 30px rgba(0,0,0,.18);min-width:190px;overflow:hidden;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);min-width:200px;overflow:hidden;
 }
 .wa-opciones button{
   display:flex;align-items:center;gap:.55rem;width:100%;
@@ -538,7 +546,7 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
 .res-calc__aviso{font-size:.78rem;color:var(--gris-claro);margin-top:.5rem}
 
 .fila-act{
-  display:grid;grid-template-columns:1.6fr 1.6fr auto auto auto;gap:1rem;align-items:center;
+  display:grid;grid-template-columns:1.4fr 1.3fr 1.6fr auto;gap:1rem;align-items:center;
   padding:.85rem 1.15rem;border-bottom:1px solid var(--linea);
 }
 .fila-act:last-child{border-bottom:0}
@@ -546,9 +554,6 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
   background:var(--negro);color:var(--dorado);
   font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;
 }
-.fila-act__coef{font-family:var(--display);font-size:1.1rem;color:var(--verde)}
-.fila-act__monto{font-family:var(--display);font-size:1.15rem}
-.fila-act__antes{font-size:.76rem;color:var(--gris);text-decoration:line-through}
 @media (max-width:900px){
   .fila-act{grid-template-columns:1fr auto;gap:.4rem .75rem}
   .fila-act--cabeza{display:none}
@@ -656,6 +661,18 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
           <option value="si">Pagados</option>
           <option value="no">Pendientes</option>
         </select>
+        <select class="filtro" id="f-firma">
+          <option value="">Toda firma</option>
+          <option value="completa">Firmado (ambos)</option>
+          <option value="falta-inq">Falta el inquilino</option>
+          <option value="falta-prop">Falta el propietario</option>
+          <option value="sinfirmar">Sin firmar ninguno</option>
+        </select>
+        <select class="filtro" id="f-honorarios">
+          <option value="">Honorarios: todos</option>
+          <option value="si">Honorarios pagados</option>
+          <option value="no">Honorarios pendientes</option>
+        </select>
         <select class="filtro" id="f-tipo"><option value="">Todos los tipos</option></select>
         <select class="filtro" id="f-vto">
           <option value="">Todos los contratos</option>
@@ -709,9 +726,10 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
     </section>
 
     <section class="vista" id="vista-actualizaciones">
-      <h2 class="titulo-seccion">Actualizaciones por IPC</h2>
+      <h2 class="titulo-seccion">Actualizaciones</h2>
       <p class="bajada" id="sub-actualizaciones">
-        Calculado con el Índice de Precios al Consumidor (INDEC), nivel general.
+        Calculá un monto puntual con la calculadora, o mirá abajo a quién le
+        corresponde actualizar según la fecha.
       </p>
 
       <div class="panel-blanco" id="calc-libre">
@@ -742,10 +760,11 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
         <div id="resultado-calc-libre"></div>
       </div>
 
-      <h2 class="titulo-seccion">Contratos con actualización cargada</h2>
+      <h2 class="titulo-seccion">A quién le corresponde actualizar</h2>
       <p class="bajada">
-        Para que un contrato aparezca acá, cargale el monto y la periodicidad
-        desde el editor (lápiz, en Contratos).
+        Según la fecha de inicio y cada cuántos meses actualiza cada contrato
+        (cargado en el editor, lápiz, en Contratos). Para calcular el monto
+        nuevo de alguno, usá la calculadora de arriba.
       </p>
       <div class="tabla-caja" id="caja-actualizaciones"></div>
     </section>
@@ -772,7 +791,7 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
  * Ejemplo:
  * const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycb.../exec';
  */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzQI6itB4PWzJvRhicUehW3cZIdSkS3d3j5SmJm-ZHkBuEuSWdyrRRIWop0Y3ZGJ572Fg/exec';
+const URL_SCRIPT = 'PEGÁ_ACÁ_TU_URL_DE_APPS_SCRIPT';
 
 /**
  * Llama a una función del servidor (Codigo.gs) vía fetch(), porque este
@@ -960,12 +979,14 @@ function pintarPanel(){
    ========================================================= */
 function hayFiltros(){
   return !!($('#buscar').value.trim() || $('#f-estado').value ||
-            $('#f-tipo').value || $('#f-vto').value || filtroMes);
+            $('#f-tipo').value || $('#f-vto').value ||
+            $('#f-firma').value || $('#f-honorarios').value || filtroMes);
 }
 
 function contratosFiltrados(){
   const q = normalizar($('#buscar').value.trim());
   const estado = $('#f-estado').value, tipo = $('#f-tipo').value, vto = $('#f-vto').value;
+  const firma = $('#f-firma').value, honorarios = $('#f-honorarios').value;
 
   return DATOS.contratos.filter(c => {
     if (q) {
@@ -976,6 +997,15 @@ function contratosFiltrados(){
     if (estado === 'si' && !c.pagado) return false;
     if (estado === 'no' && c.pagado) return false;
     if (tipo && c.tipo !== tipo) return false;
+    if (firma) {
+      const inq = !!c.firmado_inquilino, prop = !!c.firmado_propietario;
+      if (firma === 'completa'  && !(inq && prop)) return false;
+      if (firma === 'falta-inq' && !(!inq && prop)) return false;
+      if (firma === 'falta-prop'&& !(inq && !prop)) return false;
+      if (firma === 'sinfirmar' && (inq || prop)) return false;
+    }
+    if (honorarios === 'si' && !c.honorarios_pagados) return false;
+    if (honorarios === 'no' && c.honorarios_pagados) return false;
     if (filtroMes && !(c.vto && String(c.vto).startsWith(filtroMes))) return false;
     if (vto) {
       const e = estadoVto(c);
@@ -1001,6 +1031,22 @@ function pastillaVto(c){
   return `<span class="celda-suave">${f}</span>`;
 }
 
+/** Pastilla de estado de firma: ambos, falta el inquilino, falta el
+    propietario, o falta por completo. */
+function pastillaFirma(c){
+  const inq = !!c.firmado_inquilino, prop = !!c.firmado_propietario;
+  if (inq && prop)  return `<span class="pastilla pastilla--verde" title="Firmaron los dos">Firmado</span>`;
+  if (inq && !prop) return `<span class="pastilla pastilla--ambar" title="Falta la firma del propietario">Falta propietario</span>`;
+  if (!inq && prop) return `<span class="pastilla pastilla--ambar" title="Falta la firma del inquilino">Falta inquilino</span>`;
+  return `<span class="pastilla pastilla--rojo" title="No firmó ninguno">Sin firmar</span>`;
+}
+
+function pastillaHonorarios(c){
+  return c.honorarios_pagados
+    ? `<span class="pastilla pastilla--verde">Honorarios OK</span>`
+    : `<span class="pastilla pastilla--rojo">Honorarios pend.</span>`;
+}
+
 function pintarTabla(){
   const lista = contratosFiltrados();
   const btn = $('#btn-limpiar');
@@ -1023,7 +1069,10 @@ function pintarTabla(){
     return `
     <div class="fila fila--dato ${c.locatario && !c.pagado ? 'fila--pendiente' : ''}" data-id="${c.id}">
       <span class="c-nro celda-suave">${esc(c.nro)}</span>
-      <span class="c-prop celda-fuerte">${esc(c.locador)}</span>
+      <span class="c-prop">
+        <span class="celda-fuerte">${esc(c.locador)}</span>
+        <span class="c-prop__estados">${pastillaFirma(c)}${pastillaHonorarios(c)}</span>
+      </span>
       <span class="c-inq celda-suave">${c.locatario ? esc(c.locatario) : '<em>sin inquilino</em>'}</span>
       <span class="c-dir">
         <span class="celda-suave">${esc(c.direccion)}</span>
@@ -1234,8 +1283,13 @@ function linkWhatsApp_(telefono, mensaje){
   return `https://api.whatsapp.com/send?text=${encodeURIComponent(mensaje)}`;
 }
 
-function cerrarMenuWa(){ $$('.wa-opciones').forEach(m => m.remove()); }
+function cerrarMenuWa(){
+  $$('.wa-opciones').forEach(m => m.remove());
+  $$('[data-wa-abrir]').forEach(b => { b.dataset.waOpen = ''; });
+}
 document.addEventListener('click', cerrarMenuWa);
+window.addEventListener('scroll', cerrarMenuWa, true);
+window.addEventListener('resize', cerrarMenuWa);
 
 const ICONO_WA = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.38-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35z"/></svg>`;
 
@@ -1262,9 +1316,9 @@ function filaOpcionWa(nombre, etiqueta, telefono, mensaje, disponible){
 }
 
 function abrirMenuWa(boton){
-  const yaAbierto = boton.parentElement.querySelector('.wa-opciones');
+  const yaAbiertoPara = boton.dataset.waOpen === '1';
   cerrarMenuWa();
-  if (yaAbierto) return;
+  if (yaAbiertoPara) { boton.dataset.waOpen = ''; return; }
 
   const id = boton.dataset.waAbrir;
   const c = DATOS.contratos.find(x => x.id === id);
@@ -1279,7 +1333,38 @@ function abrirMenuWa(boton){
   menu.innerHTML =
     filaOpcionWa(c.locador, 'Al propietario', c.telefono_locador, msjProp, true) +
     filaOpcionWa(c.locatario, 'Al inquilino', c.telefono_locatario, msjInq, !!c.locatario);
-  boton.parentElement.appendChild(menu);
+
+  // Se agrega a <body>, no al contenedor de la fila: así el menú no queda
+  // atrapado por el overflow:hidden de la tabla.
+  document.body.appendChild(menu);
+  boton.dataset.waOpen = '1';
+
+  // Posición: debajo del botón por defecto; si no entra abajo, arriba;
+  // si no entra a la derecha, se corre a la izquierda. Se acota siempre
+  // dentro de la ventana con Math.min/max, así que nunca se recorta,
+  // ni siquiera en pantallas muy bajas donde "arriba" tampoco entraría.
+  const r = boton.getBoundingClientRect();
+  const alturaMenu = menu.offsetHeight;
+  const anchoMenu = menu.offsetWidth;
+  const espacioAbajo = window.innerHeight - r.bottom;
+  const espacioArriba = r.top;
+
+  let arriba;
+  if (espacioAbajo >= alturaMenu + 10) {
+    arriba = r.bottom + 6;                       // entra abajo: lo normal
+  } else if (espacioArriba >= alturaMenu + 10) {
+    arriba = r.top - alturaMenu - 6;             // no entra abajo, pero sí arriba
+  } else {
+    arriba = window.innerHeight - alturaMenu - 8; // no entra en ninguno de los dos:
+  }                                               // lo pegamos al borde inferior visible
+  arriba = Math.max(8, Math.min(arriba, window.innerHeight - alturaMenu - 8));
+
+  let izquierda = r.right - anchoMenu;
+  if (izquierda < 8) izquierda = 8;
+  izquierda = Math.min(izquierda, window.innerWidth - anchoMenu - 8);
+
+  menu.style.top = arriba + 'px';
+  menu.style.left = izquierda + 'px';
 
   // Enviar directo: ya hay teléfono guardado
   menu.querySelectorAll('[data-wa-mandar]').forEach(b => {
@@ -1397,7 +1482,6 @@ function abrirComentarios(id){
 /* =========================================================
    9b. ACTUALIZACIONES POR IPC
    ========================================================= */
-let ACTUALIZACIONES = null;   // se pide una sola vez por sesión
 
 function formatoMonto_(n){
   return '$' + Math.round(n).toLocaleString('es-AR');
@@ -1406,49 +1490,56 @@ function formatoPct_(n){
   return (n * 100).toLocaleString('es-AR', { minimumFractionDigits:1, maximumFractionDigits:1 }) + '%';
 }
 
-async function pintarActualizaciones(forzar){
+/**
+ * Calcula, solo con fecha de inicio + periodicidad (sin monto), cuándo
+ * le toca actualizar a un contrato. Igual que en el servidor: se cuentan
+ * los períodos completos ya transcurridos desde el inicio.
+ */
+function proximaActualizacionPorFecha_(c){
+  if (!c.inicio || !c.actualizacion_meses) return null;
+  const inicio = aFecha(c.inicio);
+  if (!inicio) return null;
+  const meses = Number(c.actualizacion_meses);
+  const totalMeses = (HOY.getFullYear() - inicio.getFullYear()) * 12 + (HOY.getMonth() - inicio.getMonth());
+  const periodos = Math.floor(totalMeses / meses);
+  if (periodos < 0) return null;
+  const mesProximo = new Date(inicio.getFullYear(), inicio.getMonth() + (periodos + 1) * meses, inicio.getDate());
+  const dias = Math.round((mesProximo - HOY) / 86400000);
+  return { proxima: mesProximo, dias };
+}
+
+function pintarActualizaciones(){
   const caja = $('#caja-actualizaciones');
-  if (!ACTUALIZACIONES || forzar) {
-    caja.innerHTML = `<p class="sin-datos">Calculando con el índice del INDEC…</p>`;
-    try {
-      ACTUALIZACIONES = await servidor('obtenerActualizaciones');
-    } catch {
-      caja.innerHTML = `<p class="sin-datos">No se pudo traer el cálculo. Probá el botón Actualizar de arriba.</p>`;
-      return;
-    }
-  }
 
-  const ultimo = ACTUALIZACIONES.ipc_actualizado_hasta;
-  $('#sub-actualizaciones').textContent = ultimo
-    ? `Calculado con el Índice de Precios al Consumidor (INDEC), nivel general. Dato oficial más reciente: ${periodoLegible(ultimo)}.`
-    : `Calculado con el Índice de Precios al Consumidor (INDEC), nivel general.`;
-
-  const lista = [...ACTUALIZACIONES.calculos].sort((a,b) => a.dias_proxima_actualizacion - b.dias_proxima_actualizacion);
+  const lista = DATOS.contratos
+    .map(c => {
+      const r = proximaActualizacionPorFecha_(c);
+      return r ? { ...c, ...r } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.dias - b.dias);
 
   if (!lista.length) {
-    caja.innerHTML = `<p class="sin-datos">Todavía ningún contrato tiene monto y periodicidad cargados.</p>`;
+    caja.innerHTML = `<p class="sin-datos">Todavía ningún contrato tiene fecha de inicio y periodicidad cargadas.</p>`;
     return;
   }
 
   caja.innerHTML = `
     <div class="fila-act fila-act--cabeza">
-      <span>Propietario</span><span>Dirección</span><span>Próxima actualización</span><span>Aumento</span><span>Nuevo monto</span>
+      <span>Propietario</span><span>Inquilino</span><span>Dirección</span><span>Corresponde actualizar</span>
     </div>` +
     lista.map(c => {
       const unidad = [c.piso && `P${esc(c.piso)}`, c.depto && `Dto ${esc(c.depto)}`].filter(Boolean).join(' ');
-      const d = c.dias_proxima_actualizacion;
+      const d = c.dias;
       const cuando = d < 0 ? `venció hace ${Math.abs(d)} días` : d === 0 ? 'hoy' : `en ${d} días`;
       const urgente = d <= 15;
+      const fechaTexto = `${String(c.proxima.getDate()).padStart(2,'0')}/${String(c.proxima.getMonth()+1).padStart(2,'0')}/${c.proxima.getFullYear()}`;
       return `
       <div class="fila-act">
         <span class="celda-fuerte">${esc(c.locador)}</span>
+        <span class="celda-suave">${c.locatario ? esc(c.locatario) : '<em>sin inquilino</em>'}</span>
         <span class="celda-suave">${esc(c.direccion)} ${unidad ? `<span class="celda-sub">${unidad}</span>` : ''}</span>
-        <span class="pastilla ${urgente ? 'pastilla--rojo' : 'pastilla--ambar'}">${fechaCorta(c.proxima_actualizacion)} · ${cuando}</span>
-        <span class="fila-act__coef">+${formatoPct_(c.porcentaje)}</span>
-        <span>
-          <span class="fila-act__monto">${formatoMonto_(c.monto_actualizado)}</span><br>
-          <span class="fila-act__antes">${formatoMonto_(c.monto_base)}</span>
-        </span>
+        <span class="pastilla ${urgente ? 'pastilla--rojo' : 'pastilla--ambar'}">${fechaTexto} · ${cuando}</span>
       </div>`;
     }).join('');
 }
@@ -1490,8 +1581,9 @@ function abrirEditor(id){
   const nuevo = !id;
   const c = nuevo
     ? { id:'', nro:'', locador:'', locatario:'', direccion:'', piso:'', depto:'',
-        tipo:'Departamento', pagado:false, firmado:false, inicio:'', vto:'',
-        monto:0, actualizacion_meses:0, notas:'', comentarios:[] }
+        tipo:'Departamento', pagado:false, honorarios_pagados:false,
+        firmado_inquilino:false, firmado_propietario:false, inicio:'', vto:'',
+        actualizacion_meses:0, notas:'', comentarios:[] }
     : DATOS.contratos.find(x => x.id === id);
   if (!c) return;
 
@@ -1515,21 +1607,34 @@ function abrirEditor(id){
         <div class="campo"><label for="e-nro">N° de administración</label><input id="e-nro" value="${esc(c.nro)}"></div>
         <div class="campo"><label for="e-inicio">Inicio del contrato</label><input type="date" id="e-inicio" value="${esc(c.inicio)}"></div>
         <div class="campo"><label for="e-vto">Vencimiento</label><input type="date" id="e-vto" value="${esc(c.vto)}"></div>
+        <div class="campo campo--largo" style="border-top:1px solid var(--linea);padding-top:1rem;margin-top:.2rem">
+          <label style="margin-bottom:.1rem">Firma del contrato</label>
+        </div>
         <div class="campo">
-          <label for="e-firmado">Contrato firmado</label>
-          <select id="e-firmado">
-            <option value="no" ${!c.firmado ? 'selected' : ''}>No</option>
-            <option value="si" ${c.firmado ? 'selected' : ''}>Sí</option>
+          <label for="e-firmado-inq">Firmó el inquilino</label>
+          <select id="e-firmado-inq">
+            <option value="no" ${!c.firmado_inquilino ? 'selected' : ''}>No</option>
+            <option value="si" ${c.firmado_inquilino ? 'selected' : ''}>Sí</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="e-firmado-prop">Firmó el propietario</label>
+          <select id="e-firmado-prop">
+            <option value="no" ${!c.firmado_propietario ? 'selected' : ''}>No</option>
+            <option value="si" ${c.firmado_propietario ? 'selected' : ''}>Sí</option>
+          </select>
+        </div>
+        <div class="campo campo--largo">
+          <label for="e-honorarios">Honorarios pagados</label>
+          <select id="e-honorarios">
+            <option value="no" ${!c.honorarios_pagados ? 'selected' : ''}>No</option>
+            <option value="si" ${c.honorarios_pagados ? 'selected' : ''}>Sí</option>
           </select>
         </div>
         <div class="campo campo--largo" style="border-top:1px solid var(--linea);padding-top:1rem;margin-top:.2rem">
-          <label style="margin-bottom:.1rem">Actualización por IPC <span class="celda-sub">(opcional, para la pestaña Actualizaciones)</span></label>
+          <label style="margin-bottom:.1rem">Actualización <span class="celda-sub">(opcional, para la pestaña Vencimientos de actualización)</span></label>
         </div>
-        <div class="campo">
-          <label for="e-monto">Monto del alquiler</label>
-          <input type="number" id="e-monto" min="0" step="1000" value="${c.monto || ''}">
-        </div>
-        <div class="campo">
+        <div class="campo campo--largo">
           <label for="e-actualiza">Actualiza cada</label>
           <select id="e-actualiza">
             <option value="" ${!c.actualizacion_meses ? 'selected' : ''}>Sin definir</option>
@@ -1564,8 +1669,9 @@ function abrirEditor(id){
           nro:v('#e-nro'), locador:v('#e-locador'), locatario:v('#e-locatario'),
           direccion:v('#e-direccion'), piso:v('#e-piso'), depto:v('#e-depto'),
           tipo:$('#e-tipo').value, inicio:v('#e-inicio'), vto:v('#e-vto'), notas:v('#e-notas'),
-          firmado: $('#e-firmado').value === 'si',
-          monto: Number(v('#e-monto')) || 0,
+          firmado_inquilino: $('#e-firmado-inq').value === 'si',
+          firmado_propietario: $('#e-firmado-prop').value === 'si',
+          honorarios_pagados: $('#e-honorarios').value === 'si',
           actualizacion_meses: Number($('#e-actualiza').value) || 0
         };
         boton.disabled = true; boton.textContent = 'Guardando…';
@@ -1671,11 +1777,10 @@ function irAVista(nombre){
   $$('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.vista === nombre)));
   $$('.vista').forEach(v => v.classList.toggle('activa', v.id === `vista-${nombre}`));
   window.scrollTo({ top:0, behavior:'smooth' });
-  if (nombre === 'actualizaciones' && !ACTUALIZACIONES) pintarActualizaciones(false);
 }
 
 function redibujar(){
-  pintarPanel(); pintarTabla(); pintarPropietarios(); pintarCalendario();
+  pintarPanel(); pintarTabla(); pintarPropietarios(); pintarCalendario(); pintarActualizaciones();
 }
 
 /** Trae lo que haya cargado la otra computadora. */
@@ -1685,7 +1790,6 @@ async function refrescar(silencioso){
   try {
     DATOS = await servidor('refrescar');
     redibujar();
-    if ($('#vista-actualizaciones').classList.contains('activa')) pintarActualizaciones(true);
     if (!silencioso) avisar('Datos actualizados');
   } catch {
     if (!silencioso) mostrarError('No se pudo actualizar. Revisá la conexión.');
@@ -1703,11 +1807,12 @@ function iniciarApp(){
     tipos.map(t => `<option>${esc(t)}</option>`).join('');
 
   $$('.tab').forEach(t => t.addEventListener('click', () => irAVista(t.dataset.vista)));
-  ['#buscar','#f-estado','#f-tipo','#f-vto'].forEach(s =>
+  ['#buscar','#f-estado','#f-tipo','#f-vto','#f-firma','#f-honorarios'].forEach(s =>
     $(s).addEventListener('input', () => { filtroMes = ''; pintarTabla(); }));
   $('#btn-limpiar').addEventListener('click', () => {
     if (!hayFiltros()) { avisar('No hay filtros aplicados.'); return; }
     $('#buscar').value=''; $('#f-estado').value=''; $('#f-tipo').value=''; $('#f-vto').value='';
+    $('#f-firma').value=''; $('#f-honorarios').value='';
     filtroMes=''; pintarTabla();
     avisar('Listo, se ven todos los contratos otra vez.');
   });
