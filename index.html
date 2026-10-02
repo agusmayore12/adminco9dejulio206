@@ -766,6 +766,10 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
         (cargado en el editor, lápiz, en Contratos). Para calcular el monto
         nuevo de alguno, usá la calculadora de arriba.
       </p>
+      <div class="herramientas">
+        <select class="filtro" id="filtro-mes-actualizacion"></select>
+        <span class="contador-resultados" id="contador-actualizaciones"></span>
+      </div>
       <div class="tabla-caja" id="caja-actualizaciones"></div>
     </section>
 
@@ -791,7 +795,7 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
  * Ejemplo:
  * const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycb.../exec';
  */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbz2G6VR1MHHbF4G2KRYzd7Ud80GQ5naNulKnUhlTrA3YE0TaM0ZeHNdcUA4ErCxXWY2Yw/exec';
+const URL_SCRIPT = 'PEGÁ_ACÁ_TU_URL_DE_APPS_SCRIPT';
 
 /**
  * Llama a una función del servidor (Codigo.gs) vía fetch(), porque este
@@ -1500,7 +1504,10 @@ function proximaActualizacionPorFecha_(c){
   const inicio = aFecha(c.inicio);
   if (!inicio) return null;
   const meses = Number(c.actualizacion_meses);
-  const totalMeses = (HOY.getFullYear() - inicio.getFullYear()) * 12 + (HOY.getMonth() - inicio.getMonth());
+  // Se compara también el día del mes: un contrato que empezó el 15 no
+  // cumple el período el día 2, aunque ya haya cambiado de mes calendario.
+  let totalMeses = (HOY.getFullYear() - inicio.getFullYear()) * 12 + (HOY.getMonth() - inicio.getMonth());
+  if (HOY.getDate() < inicio.getDate()) totalMeses -= 1;
   const periodos = Math.floor(totalMeses / meses);
   if (periodos < 0) return null;
   const mesProximo = new Date(inicio.getFullYear(), inicio.getMonth() + (periodos + 1) * meses, inicio.getDate());
@@ -1508,8 +1515,27 @@ function proximaActualizacionPorFecha_(c){
   return { proxima: mesProximo, dias };
 }
 
+/** Mes calendario que se está mirando en la lista (por defecto, el actual). */
+let mesActualizacionesElegido = `${HOY.getFullYear()}-${String(HOY.getMonth()+1).padStart(2,'0')}`;
+
 function pintarActualizaciones(){
   const caja = $('#caja-actualizaciones');
+  const selMes = $('#filtro-mes-actualizacion');
+
+  // Opciones del selector: el mes actual más los 5 siguientes, para poder
+  // adelantarse si hace falta, sin que la lista por defecto muestre de más.
+  if (selMes && !selMes.dataset.armado) {
+    const opciones = [];
+    for (let i = 0; i < 6; i++) {
+      const f = new Date(HOY.getFullYear(), HOY.getMonth() + i, 1);
+      const clave = `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}`;
+      opciones.push(`<option value="${clave}">${i === 0 ? 'Este mes' : periodoLegible(clave)}</option>`);
+    }
+    selMes.innerHTML = opciones.join('');
+    selMes.value = mesActualizacionesElegido;
+    selMes.dataset.armado = '1';
+    selMes.addEventListener('input', () => { mesActualizacionesElegido = selMes.value; pintarActualizaciones(); });
+  }
 
   const lista = DATOS.contratos
     .map(c => {
@@ -1517,10 +1543,15 @@ function pintarActualizaciones(){
       return r ? { ...c, ...r } : null;
     })
     .filter(Boolean)
+    // Solo los contratos cuya próxima actualización cae en el mes elegido.
+    .filter(c => `${c.proxima.getFullYear()}-${String(c.proxima.getMonth()+1).padStart(2,'0')}` === mesActualizacionesElegido)
     .sort((a, b) => a.dias - b.dias);
 
+  $('#contador-actualizaciones').textContent =
+    `${lista.length} ${lista.length === 1 ? 'contrato corresponde' : 'contratos corresponden'} actualizar`;
+
   if (!lista.length) {
-    caja.innerHTML = `<p class="sin-datos">Todavía ningún contrato tiene fecha de inicio y periodicidad cargadas.</p>`;
+    caja.innerHTML = `<p class="sin-datos">Ningún contrato corresponde actualizar en ${periodoLegible(mesActualizacionesElegido).toLowerCase()}.</p>`;
     return;
   }
 
