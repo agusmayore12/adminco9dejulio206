@@ -203,6 +203,22 @@ button{font-family:inherit}
 .herramientas{
   display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem;
 }
+.switch-chico{
+  display:flex;align-items:center;gap:.5rem;
+  min-height:42px;padding:0 .4rem;
+  font-size:.82rem;color:var(--negro);cursor:pointer;white-space:nowrap;
+}
+.switch-chico input{position:absolute;opacity:0;width:0;height:0}
+.switch-chico__pista{
+  position:relative;flex:0 0 auto;width:34px;height:19px;
+  background:rgba(0,0,0,.18);border-radius:99px;transition:background .2s;
+}
+.switch-chico__pista::after{
+  content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;
+  background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s;
+}
+.switch-chico input:checked + .switch-chico__pista{background:var(--dorado)}
+.switch-chico input:checked + .switch-chico__pista::after{transform:translateX(15px)}
 .buscador{position:relative;flex:1 1 260px;min-width:200px}
 .buscador svg{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:var(--gris)}
 .buscador input{
@@ -509,27 +525,43 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
      la calcula abrirMenuWa() según dónde está el botón en pantalla. */
   position:fixed;z-index:500;
   background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio-sm);
-  box-shadow:0 10px 30px rgba(0,0,0,.18);min-width:200px;overflow:hidden;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);min-width:250px;max-width:300px;overflow:hidden;
+}
+.wa-opciones__grupo{padding:.4rem 0;border-bottom:1px solid var(--linea)}
+.wa-opciones__grupo:last-child{border-bottom:0}
+.wa-opciones__titulo{
+  padding:.4rem .9rem .2rem;margin:0;
+  font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);
 }
 .wa-opciones button{
   display:flex;align-items:center;gap:.55rem;width:100%;
-  padding:.65rem .9rem;background:none;border:0;cursor:pointer;
+  padding:.5rem .9rem;background:none;border:0;cursor:pointer;
   font-size:.82rem;text-align:left;color:var(--negro);
 }
 .wa-opciones button:hover{background:var(--marfil)}
 .wa-opciones button:disabled{color:var(--gris-claro);cursor:not-allowed}
 .wa-opciones button:disabled:hover{background:none}
+.wa-opciones__texto{flex:1;min-width:0;display:flex;flex-direction:column}
+.wa-opciones__etiqueta{font-weight:500;line-height:1.3}
+.wa-opciones__numero{font-size:.72rem;color:var(--gris);line-height:1.3}
+.wa-opciones__borrar{
+  flex:0 0 auto;width:20px;height:20px;padding:0 !important;
+  display:grid;place-items:center;border-radius:50%;
+  font-size:1rem;line-height:1;color:var(--gris-claro);
+}
+.wa-opciones__borrar:hover{background:var(--rojo-fondo) !important;color:var(--rojo)}
 .wa-opciones__fila{padding:.6rem .9rem;font-size:.78rem;color:var(--gris)}
 .wa-opciones__fila--vacia{color:var(--gris-claro);font-style:italic}
-.wa-opciones__sin-tel{display:block;margin-bottom:.35rem}
-.wa-opciones__carga{display:flex;gap:.4rem;align-items:center}
+.wa-opciones__carga{display:flex;gap:.35rem;align-items:center;padding:.4rem .9rem .2rem}
 .wa-opciones__carga input{
-  width:100px;min-height:30px;padding:.2rem .5rem;font-size:.78rem;
-  border:1px solid var(--linea);border-radius:6px;background:var(--marfil);
+  min-height:30px;padding:.2rem .5rem;font-size:.75rem;
+  border:1px solid var(--linea);border-radius:6px;background:var(--marfil);min-width:0;
 }
+.wa-opciones__carga input[data-etiqueta-nueva]{flex:1.1}
+.wa-opciones__carga input[data-tel-nuevo]{flex:1}
 .wa-opciones__carga input:focus{outline:none;border-color:var(--dorado)}
 .wa-opciones__carga button{
-  width:30px;height:30px;padding:0;flex:0 0 auto;
+  width:30px;height:30px;padding:0 !important;flex:0 0 auto;
   display:grid;place-items:center;border-radius:6px;
 }
 .wa-opciones svg{color:#1FAF54;flex:0 0 auto}
@@ -683,6 +715,11 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
           <option value="sinfecha">Sin fecha cargada</option>
           <option value="vacante">Sin inquilino</option>
         </select>
+        <label class="switch-chico">
+          <input type="checkbox" id="f-ocultar-vacantes">
+          <span class="switch-chico__pista"></span>
+          Ocultar sin inquilino
+        </label>
         <button class="btn btn--claro btn--chico" id="btn-limpiar">Limpiar</button>
         <button class="btn btn--dorado btn--chico" id="btn-nuevo">+ Nuevo contrato</button>
         <span class="contador-resultados" id="contador"></span>
@@ -795,7 +832,7 @@ select.filtro:focus{outline:none;border-color:var(--dorado)}
  * Ejemplo:
  * const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycb.../exec';
  */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbz2G6VR1MHHbF4G2KRYzd7Ud80GQ5naNulKnUhlTrA3YE0TaM0ZeHNdcUA4ErCxXWY2Yw/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxoMvyJGzJKP-8MGjZJRhf4OeGY2XSHtNJI0SryGosw6Cd913aZghpQkWiSYDads9Li/exec';
 
 /**
  * Llama a una función del servidor (Codigo.gs) vía fetch(), porque este
@@ -984,15 +1021,18 @@ function pintarPanel(){
 function hayFiltros(){
   return !!($('#buscar').value.trim() || $('#f-estado').value ||
             $('#f-tipo').value || $('#f-vto').value ||
-            $('#f-firma').value || $('#f-honorarios').value || filtroMes);
+            $('#f-firma').value || $('#f-honorarios').value ||
+            $('#f-ocultar-vacantes').checked || filtroMes);
 }
 
 function contratosFiltrados(){
   const q = normalizar($('#buscar').value.trim());
   const estado = $('#f-estado').value, tipo = $('#f-tipo').value, vto = $('#f-vto').value;
   const firma = $('#f-firma').value, honorarios = $('#f-honorarios').value;
+  const ocultarVacantes = $('#f-ocultar-vacantes').checked;
 
   return DATOS.contratos.filter(c => {
+    if (ocultarVacantes && !c.locatario) return false;
     if (q) {
       const heno = normalizar([c.locador, c.locatario, c.direccion, c.nro, c.depto,
         (c.comentarios||[]).map(x => x.t).join(' ')].join(' '));
@@ -1297,26 +1337,41 @@ window.addEventListener('resize', cerrarMenuWa);
 
 const ICONO_WA = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.38-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35z"/></svg>`;
 
-/** Fila de una opción del menú: si hay teléfono, botón para mandar.
-    Si no, un campo chico para cargarlo ahí mismo. */
-function filaOpcionWa(nombre, etiqueta, telefono, mensaje, disponible){
+/**
+ * Bloque de una persona dentro del menú: un título ("Al propietario"),
+ * un botón por cada teléfono que ya tiene guardado (con su etiqueta,
+ * por si son varios: celular, un familiar, etc.), y siempre al final un
+ * campo chico para agregar uno nuevo sin tocar los que ya existen.
+ */
+function bloqueOpcionWa(nombre, etiqueta, telefonos, mensaje, disponible){
   if (!disponible) {
     return `<div class="wa-opciones__fila wa-opciones__fila--vacia">
       <span>${etiqueta}: sin inquilino</span>
     </div>`;
   }
-  if (telefono) {
-    return `<button data-wa-mandar data-tel="${esc(telefono)}" data-msj="${esc(mensaje)}">
-      ${ICONO_WA} ${etiqueta}
-    </button>`;
-  }
-  return `<div class="wa-opciones__fila">
-    <span class="wa-opciones__sin-tel">${etiqueta}: sin teléfono</span>
-    <div class="wa-opciones__carga">
-      <input type="tel" placeholder="549..." data-tel-nuevo data-nombre="${esc(nombre)}">
-      <button data-guardar-tel data-nombre="${esc(nombre)}" data-msj="${esc(mensaje)}" aria-label="Guardar y abrir WhatsApp">${ICONO_WA}</button>
-    </div>
-  </div>`;
+
+  const botones = (telefonos || []).map(t => `
+    <button data-wa-mandar data-tel="${esc(t.telefono)}" data-msj="${esc(mensaje)}">
+      ${ICONO_WA}
+      <span class="wa-opciones__texto">
+        <span class="wa-opciones__etiqueta">${esc(t.etiqueta)}</span>
+        <span class="wa-opciones__numero">${esc(t.telefono)}</span>
+      </span>
+      <button class="wa-opciones__borrar" data-wa-borrar
+              data-nombre="${esc(nombre)}" data-etiqueta="${esc(t.etiqueta)}" data-tel="${esc(t.telefono)}"
+              title="Borrar este teléfono" aria-label="Borrar este teléfono">×</button>
+    </button>`).join('');
+
+  return `
+    <div class="wa-opciones__grupo">
+      <p class="wa-opciones__titulo">${etiqueta}${!telefonos?.length ? ': sin teléfono' : ''}</p>
+      ${botones}
+      <div class="wa-opciones__carga">
+        <input type="text" placeholder="Nombre (ej. Celular)" data-etiqueta-nueva data-nombre="${esc(nombre)}">
+        <input type="tel" placeholder="549..." data-tel-nuevo data-nombre="${esc(nombre)}">
+        <button data-guardar-tel data-nombre="${esc(nombre)}" data-msj="${esc(mensaje)}" aria-label="Agregar teléfono">${ICONO_WA}</button>
+      </div>
+    </div>`;
 }
 
 function abrirMenuWa(boton){
@@ -1335,8 +1390,8 @@ function abrirMenuWa(boton){
   const menu = document.createElement('div');
   menu.className = 'wa-opciones';
   menu.innerHTML =
-    filaOpcionWa(c.locador, 'Al propietario', c.telefono_locador, msjProp, true) +
-    filaOpcionWa(c.locatario, 'Al inquilino', c.telefono_locatario, msjInq, !!c.locatario);
+    bloqueOpcionWa(c.locador, 'Al propietario', c.telefonos_locador, msjProp, true) +
+    bloqueOpcionWa(c.locatario, 'Al inquilino', c.telefonos_locatario, msjInq, !!c.locatario);
 
   // Se agrega a <body>, no al contenedor de la fila: así el menú no queda
   // atrapado por el overflow:hidden de la tabla.
@@ -1370,35 +1425,62 @@ function abrirMenuWa(boton){
   menu.style.top = arriba + 'px';
   menu.style.left = izquierda + 'px';
 
-  // Enviar directo: ya hay teléfono guardado
+  // Enviar directo: ya hay teléfono guardado. El botón de borrar está
+  // anidado adentro, así que primero chequeamos que el clic no haya sido
+  // sobre él (si no, se dispararían los dos a la vez).
   menu.querySelectorAll('[data-wa-mandar]').forEach(b => {
     b.addEventListener('click', ev => {
       ev.stopPropagation();
+      if (ev.target.closest('[data-wa-borrar]')) return;
       window.open(linkWhatsApp_(b.dataset.tel, b.dataset.msj), '_blank', 'noopener');
       cerrarMenuWa();
     });
   });
 
-  // Cargar el teléfono y mandar en el mismo paso
+  // Borrar un teléfono puntual (sin afectar los demás de esa persona)
+  menu.querySelectorAll('[data-wa-borrar]').forEach(b => {
+    b.addEventListener('click', async ev => {
+      ev.stopPropagation();
+      b.disabled = true;
+      try {
+        await servidor('borrarTelefono', b.dataset.nombre, b.dataset.etiqueta, b.dataset.tel);
+        const quitar = (lista) => lista?.filter(t => !(t.etiqueta === b.dataset.etiqueta && t.telefono === b.dataset.tel));
+        DATOS.contratos.forEach(x => {
+          if (x.locador === b.dataset.nombre) x.telefonos_locador = quitar(x.telefonos_locador);
+          if (x.locatario === b.dataset.nombre) x.telefonos_locatario = quitar(x.telefonos_locatario);
+        });
+        cerrarMenuWa();
+        avisar('Teléfono eliminado');
+        pintarTabla();
+      } catch {
+        b.disabled = false;
+        mostrarError('No se pudo borrar el teléfono.');
+      }
+    });
+  });
+
+  // Agregar un teléfono nuevo (no pisa los que ya existen de esa persona)
   menu.querySelectorAll('[data-guardar-tel]').forEach(b => {
     b.addEventListener('click', async ev => {
       ev.stopPropagation();
       const nombre = b.dataset.nombre;
-      const input = menu.querySelector(`[data-tel-nuevo][data-nombre="${CSS.escape(nombre)}"]`);
-      const tel = soloDigitos_(input.value);
-      if (!tel) { input.focus(); return; }
+      const inputEtiqueta = menu.querySelector(`[data-etiqueta-nueva][data-nombre="${CSS.escape(nombre)}"]`);
+      const inputTel = menu.querySelector(`[data-tel-nuevo][data-nombre="${CSS.escape(nombre)}"]`);
+      const tel = soloDigitos_(inputTel.value);
+      const etiqueta = inputEtiqueta.value.trim() || 'Teléfono';
+      if (!tel) { inputTel.focus(); return; }
       b.disabled = true;
       try {
-        await servidor('guardarTelefono', nombre, tel);
-        // Guardamos también en memoria para que quede en esta sesión sin recargar
+        await servidor('guardarTelefono', nombre, tel, etiqueta);
+        const agregar = (lista) => [...(lista || []), { etiqueta, telefono: tel }];
         DATOS.contratos.forEach(x => {
-          if (x.locador === nombre) x.telefono_locador = tel;
-          if (x.locatario === nombre) x.telefono_locatario = tel;
+          if (x.locador === nombre) x.telefonos_locador = agregar(x.telefonos_locador);
+          if (x.locatario === nombre) x.telefonos_locatario = agregar(x.telefonos_locatario);
         });
-        window.open(linkWhatsApp_(tel, b.dataset.msj), '_blank', 'noopener');
         cerrarMenuWa();
-        avisar('Teléfono guardado');
+        avisar('Teléfono agregado');
         pintarTabla();
+        abrirMenuWa(boton);  // reabre con la lista ya actualizada
       } catch {
         b.disabled = false;
         mostrarError('No se pudo guardar el teléfono.');
@@ -1838,12 +1920,12 @@ function iniciarApp(){
     tipos.map(t => `<option>${esc(t)}</option>`).join('');
 
   $$('.tab').forEach(t => t.addEventListener('click', () => irAVista(t.dataset.vista)));
-  ['#buscar','#f-estado','#f-tipo','#f-vto','#f-firma','#f-honorarios'].forEach(s =>
+  ['#buscar','#f-estado','#f-tipo','#f-vto','#f-firma','#f-honorarios','#f-ocultar-vacantes'].forEach(s =>
     $(s).addEventListener('input', () => { filtroMes = ''; pintarTabla(); }));
   $('#btn-limpiar').addEventListener('click', () => {
     if (!hayFiltros()) { avisar('No hay filtros aplicados.'); return; }
     $('#buscar').value=''; $('#f-estado').value=''; $('#f-tipo').value=''; $('#f-vto').value='';
-    $('#f-firma').value=''; $('#f-honorarios').value='';
+    $('#f-firma').value=''; $('#f-honorarios').value=''; $('#f-ocultar-vacantes').checked = false;
     filtroMes=''; pintarTabla();
     avisar('Listo, se ven todos los contratos otra vez.');
   });
