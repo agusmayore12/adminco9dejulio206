@@ -897,14 +897,19 @@ function diasHasta(iso){
   const f = aFecha(iso);
   return f ? Math.round((f - HOY) / 86400000) : null;
 }
+/** Lee un período 'YYYY-MM'. Devuelve null si no tiene ese formato. */
+function leerPeriodo_(p){
+  const m = String(p ?? '').match(/^(\d{4})-(\d{1,2})/);
+  return m && Number(m[2]) >= 1 && Number(m[2]) <= 12 ? { a: Number(m[1]), m: Number(m[2]) } : null;
+}
 function periodoLegible(p){
-  if (!p) return '';
-  const [a,m] = String(p).split('-').map(Number);
-  return `${MESES[m-1]} ${a}`;
+  const r = leerPeriodo_(p);
+  return r ? `${MESES[r.m-1]} ${r.a}` : '(mes sin identificar)';
 }
 function siguientePeriodo(p){
-  let [a,m] = String(p).split('-').map(Number);
-  m++; if (m > 12){ m = 1; a++; }
+  const r = leerPeriodo_(p);
+  if (!r) return '';
+  const a = r.m === 12 ? r.a + 1 : r.a, m = r.m === 12 ? 1 : r.m + 1;
   return `${a}-${String(m).padStart(2,'0')}`;
 }
 function normalizar(t){
